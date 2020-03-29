@@ -1,10 +1,19 @@
-const tmi = require('tmi.js');
+/*
+In cmd, install the following packages:
+npm install tmi.js
+npm install obs-websocket-js
 
+Twitch chatbot followed this guide: https://dev.twitch.tv/docs/irc
+*/
+
+const tmi = require('tmi.js');
+const OBSWebSocket = require('obs-websocket-js');
+ 
 // Define configuration options
 const opts = {
   identity: {
     username: 'urgabot',
-    password: 'oauth:fykfajrfs8kb5sfp82t1ey8z8qcygn'
+    password: 'oauth:kq8b9ib4f9z23zy43vc97msawkpt8r'    //from https://twitchapps.com/tmi/
   },
   channels: [
     'urgableh'
@@ -13,8 +22,6 @@ const opts = {
 // Create a client with our options
 const client = new tmi.client(opts);
 
-const OBSWebSocket = require('obs-websocket-js');
- 
 const obs = new OBSWebSocket();
 obs.connect()
 .then(() => {
@@ -52,11 +59,12 @@ function onMessageHandler (target, context, msg, self) {
 
   // Changes scene between Screen Capture and Screen Capture 2
   if (commandName === '!andthen') {
+      // Bot types in chat
       client.say(target,`AND THEN?!`);
       obs.send('SetCurrentScene', {
         'scene-name': 'Screen Capture 2'
       });
-      obs.send('GetSceneList')
+      obs.send('GetSceneList')    // Contains most scene and source info
       .then(data => {
         //console.log(data);
         if (data["current-scene"] === 'Screen Capture 2') {
@@ -79,13 +87,14 @@ function onMessageHandler (target, context, msg, self) {
       //console.log(data);
       obs.send('SetSceneItemRender', {
         source: 'Andthen',
-        render: false,
+        render: false,          // Disable visibility
         "scene-name": 'Screen Capture 2'
       });
-      wait(100);
+      wait(100);  // Necessary to wait between setting attributes
+      // It was found that it would ignore one of the requests if it was too fast.
       obs.send('SetSceneItemRender', {
         source: 'Andthen',
-        render: true,
+        render: true,           // Enable visibility
         "scene-name": 'Screen Capture 2'
       });
     })
@@ -111,7 +120,7 @@ function onConnectedHandler (addr, port) {
   //  client.say(opts.channels[0],'/me is now running.');
   console.log(`* Connected to ${addr}:${port}`);
 }
-
+// Function to hold the program for ms seconds in milliseconds
 function wait(ms){
   var start = new Date().getTime();
   var end = start;
