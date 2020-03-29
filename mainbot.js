@@ -19,10 +19,15 @@ const opts = {
     'urgableh'
   ]
 };
+
+// Scene and source constants
+const sceneMain = 'Screen Capture 2'
+const sourceMain = 'Andthen'
+
 // Create a client with our options
 const client = new tmi.client(opts);
-
 const obs = new OBSWebSocket();
+
 obs.connect()
 .then(() => {
     console.log(`Success! We're connected & authenticated.`);
@@ -62,12 +67,12 @@ function onMessageHandler (target, context, msg, self) {
       // Bot types in chat
       client.say(target,`AND THEN?!`);
       obs.send('SetCurrentScene', {
-        'scene-name': 'Screen Capture 2'
+        'scene-name': sceneMain
       });
       obs.send('GetSceneList')    // Contains most scene and source info
       .then(data => {
         //console.log(data);
-        if (data["current-scene"] === 'Screen Capture 2') {
+        if (data["current-scene"] === sceneMain) {
           obs.send('SetCurrentScene', {
             'scene-name': 'Screen Capture'
           });
@@ -86,16 +91,16 @@ function onMessageHandler (target, context, msg, self) {
     .then(data => {
       //console.log(data);
       obs.send('SetSceneItemRender', {
-        source: 'Andthen',
+        source: sourceMain,
         render: false,          // Disable visibility
-        "scene-name": 'Screen Capture 2'
+        "scene-name": sceneMain
       });
       wait(100);  // Necessary to wait between setting attributes
       // It was found that it would ignore one of the requests if it was too fast.
       obs.send('SetSceneItemRender', {
-        source: 'Andthen',
+        source: sourceMain,
         render: true,           // Enable visibility
-        "scene-name": 'Screen Capture 2'
+        "scene-name": sceneMain
       });
     })
     .catch(err => {
