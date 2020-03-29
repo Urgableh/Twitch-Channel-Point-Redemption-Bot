@@ -58,7 +58,7 @@ function onMessageHandler (target, context, msg, self) {
       });
       obs.send('GetSceneList')
       .then(data => {
-        console.log(data);
+        //console.log(data);
         if (data["current-scene"] === 'Screen Capture 2') {
           obs.send('SetCurrentScene', {
             'scene-name': 'Screen Capture'
@@ -70,7 +70,32 @@ function onMessageHandler (target, context, msg, self) {
       });
     console.log(`* Executed ${commandName} command`);
   }
-    
+
+  // Toggles the visibility of the Andthen alert in Screen Capture 2
+  if (commandName === '!andthen2') {
+    client.say(target,`AND THEN 2?!`);
+    obs.send('GetSceneList')
+    .then(data => {
+      //console.log(data);
+      obs.send('SetSceneItemRender', {
+        source: 'Andthen',
+        render: false,
+        "scene-name": 'Screen Capture 2'
+      });
+      if (data.scenes[2].sources[0].render === false) {
+        obs.send('SetSceneItemRender', {
+          source: 'Andthen',
+          render: true,
+          "scene-name": 'Screen Capture 2'
+        });
+      }
+    })
+    .catch(err => {
+      console.log(err);
+    });
+  console.log(`* Executed ${commandName} command`);
+  }
+      
   else {
       console.log(`* Unknown command ${commandName}`);
   }
