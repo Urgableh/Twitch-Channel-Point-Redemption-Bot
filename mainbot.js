@@ -71,7 +71,7 @@ function onMessageHandler (target, context, msg, self) {
     console.log(`* Executed ${commandName} command`);
   }
 
-  // Toggles the visibility of the Andthen alert in Screen Capture 2
+  // Deactivates then reactivates the visibility of the Andthen alert in Screen Capture 2
   if (commandName === '!andthen2') {
     client.say(target,`AND THEN 2?!`);
     obs.send('GetSceneList')
@@ -82,13 +82,12 @@ function onMessageHandler (target, context, msg, self) {
         render: false,
         "scene-name": 'Screen Capture 2'
       });
-      if (data.scenes[2].sources[0].render === false) {
-        obs.send('SetSceneItemRender', {
-          source: 'Andthen',
-          render: true,
-          "scene-name": 'Screen Capture 2'
-        });
-      }
+      wait(100);
+      obs.send('SetSceneItemRender', {
+        source: 'Andthen',
+        render: true,
+        "scene-name": 'Screen Capture 2'
+      });
     })
     .catch(err => {
       console.log(err);
@@ -111,4 +110,12 @@ function rollDice () {
 function onConnectedHandler (addr, port) {
   //  client.say(opts.channels[0],'/me is now running.');
   console.log(`* Connected to ${addr}:${port}`);
+}
+
+function wait(ms){
+  var start = new Date().getTime();
+  var end = start;
+  while(end < start + ms) {
+    end = new Date().getTime();
+ }
 }
