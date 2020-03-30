@@ -22,7 +22,6 @@ const opts = {
 
 // Scene and source constants
 const sceneMain = 'Screen Capture 2'
-const sceneMain2 = 'AndthenScene'
 const sourceMain = 'Andthen'
 const sourceMainEx = 'NoAndthen'
 const waitPeriod = 15           // Global cooldown (s) when triggering alerts to disable again
@@ -55,6 +54,50 @@ client.connect();
 var counter1 = 1;
 var coolingdown = false;
 
+// Called every time a message comes in
+function onMessageHandler (target, context, msg, self) {
+  if (coolingdown) {    // If cooling down, keep monitoring chat but do not respond
+//    console.log('cooling down...');
+    return; 
+  }
+  else {
+    if (self) { return; } // Ignore messages from the bot
+
+    // Remove whitespace from chat message
+    const commandName = msg.trim();
+
+    // Changes scene between Screen Capture and Screen Capture 2
+    if (commandName === '!changeScene') {
+      changeScenef(target, context, msg, self, commandName);
+      coolingdown = true;   // sets a cooldown variable to true
+      setTimeout(cooldown, waitPeriod*1000);  // calls the function to re-enable commands
+      return;
+    }
+
+    // Deactivates then reactivates the visibility of the Andthen alert in Screen Capture 2
+    if (commandName === '!andthen') {
+      andthenf(target, context, msg, self, commandName);
+      coolingdown = true;   // sets a cooldown variable to true
+      setTimeout(cooldown, waitPeriod*1000);  // calls the function to re-enable commands
+      return;
+    }
+
+    else {
+//        console.log(`* Unknown command ${commandName}`);
+    }
+
+  }
+  
+}
+
+//////// FUNCTION DEFINITIONS BELOW ////////
+
+// Called every time the bot connects to Twitch chat
+function onConnectedHandler (addr, port) {
+  //  client.say(opts.channels[0],'/me is now running.');
+  console.log(`* Connected to ${addr}:${port}`);
+}
+
 // Cooldown function that resets the cooldown and resets invisibility of sources
 function cooldown() {
   coolingdown = false;
@@ -74,63 +117,6 @@ function cooldown() {
   })
 }
 
-// Called every time a message comes in
-function onMessageHandler (target, context, msg, self) {
-  if (coolingdown) {    // If cooling down, keep monitoring chat but do not respond
-    console.log('cooling down...');
-    return; 
-  }
-  else {
-    if (self) { return; } // Ignore messages from the bot
-
-    // Remove whitespace from chat message
-    const commandName = msg.trim();
-
-    // If the command is known, let's execute it
-    if (commandName === '!dice') {
-      const num = rollDice();
-      client.say(target, `You rolled a ${num}`);
-      console.log(`* Executed ${commandName} command`);
-    } 
-
-    // Changes scene between Screen Capture and Screen Capture 2
-    if (commandName === '!changeScene') {
-      changeScenef(target, context, msg, self, commandName);
-      coolingdown = true;   // sets a cooldown variable to true
-      setTimeout(cooldown, waitPeriod*1000);  // calls the function to re-enable commands
-      return;
-    }
-
-    // Deactivates then reactivates the visibility of the Andthen alert in Screen Capture 2
-    if (commandName === '!andthen') {
-      andthenf(target, context, msg, self, commandName);
-      coolingdown = true;   // sets a cooldown variable to true
-      setTimeout(cooldown, waitPeriod*1000);  // calls the function to re-enable commands
-      return;
-    }
-
-    else {
-        console.log(`* Unknown command ${commandName}`);
-    }
-
-  }
-  
-}
-
-//////// FUNCTION DEFINITIONS BELOW ////////
-
-// Function called when the "dice" command is issued
-function rollDice () {
-  const sides = 6;
-  return Math.floor(Math.random() * sides) + 1;
-}
-
-// Called every time the bot connects to Twitch chat
-function onConnectedHandler (addr, port) {
-  //  client.say(opts.channels[0],'/me is now running.');
-  console.log(`* Connected to ${addr}:${port}`);
-}
-
 // Function to hold the program for ms seconds in milliseconds
 function wait(ms){
   var start = new Date().getTime();
@@ -138,28 +124,6 @@ function wait(ms){
   while(end < start + ms) {
     end = new Date().getTime();
  }
-}
-
-// function for swapping scenes
-function changeScenef(target, context, msg, self, commandName){
-  // Bot types in chat
-  client.say(target,`changeScene`);
-  obs.send('SetCurrentScene', {
-    'scene-name': sceneMain
-  });
-  obs.send('GetSceneList')    // Contains most scene and source info
-  .then(data => {
-    //console.log(data);
-    if (data["current-scene"] === sceneMain) {
-      obs.send('SetCurrentScene', {
-        'scene-name': sceneMain2
-      });
-    }
-  })
-  .catch(err => {
-    console.log(err);
-  });
-  console.log(`* Executed ${commandName} command`);
 }
 
 // function for andthen
@@ -186,7 +150,7 @@ function andthenf(target, context, msg, self, commandName){
       console.log(err);
     });
     counter1++;
-    console.log(`* Executed ${commandName} command`);     
+//    console.log(`* Executed ${commandName} command`);     
   }
   else {     // Activate if counter1 is divisible by 5.
     client.say(target,`NO AND THEN!!`);
@@ -210,6 +174,6 @@ function andthenf(target, context, msg, self, commandName){
       console.log(err);
     });
     counter1++;
-    console.log(`* Executed ${commandName} command`);     
+//    console.log(`* Executed ${commandName} command`);     
   }
 }
