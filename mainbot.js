@@ -17,7 +17,11 @@ const opts = {
   },
   channels: [
     'urgableh'
-  ]
+  ],
+  connection: {
+    server: 'irc-ws.chat.twitch.tv',
+    port: 80
+  }
 };
 
 // Scene and source constants
@@ -49,7 +53,10 @@ client.on('message', onMessageHandler);
 client.on('connected', onConnectedHandler);
 
 // Connect to Twitch:
-client.connect();
+client.connect()
+.catch(err => {
+  console.log(err);
+});
 
 // Global variables for functions
 var counter1 = 1;
