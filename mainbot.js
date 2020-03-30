@@ -25,7 +25,7 @@ const sceneMain = 'Screen Capture 2'
 const sceneMain2 = 'AndthenScene'
 const sourceMain = 'Andthen'
 const sourceMainEx = 'NoAndthen'
-const waitPeriod = 20           // Global cooldown (s) when triggering alerts to disable again
+const waitPeriod = 15           // Global cooldown (s) when triggering alerts to disable again
 
 // Create a client with our options
 const client = new tmi.client(opts);
@@ -55,14 +55,28 @@ client.connect();
 var counter1 = 1;
 var coolingdown = false;
 
-
-function cooldown(arg) {
+// Cooldown function that resets the cooldown and resets invisibility of sources
+function cooldown() {
   coolingdown = false;
+  obs.send('GetSceneList')
+  .then(data => {
+    //console.log(data);
+    obs.send('SetSceneItemRender', {
+      source: sourceMain,
+      render: false,          // Disable visibility
+      "scene-name": sceneMain
+    });
+    obs.send('SetSceneItemRender', {
+      source: sourceMainEx,
+      render: false,          // Disable visibility
+      "scene-name": sceneMain
+    });
+  })
 }
 
 // Called every time a message comes in
 function onMessageHandler (target, context, msg, self) {
-  if (coolingdown) {
+  if (coolingdown) {    // If cooling down, keep monitoring chat but do not respond
     console.log('cooling down...');
     return; 
   }
@@ -126,6 +140,7 @@ function wait(ms){
  }
 }
 
+// function for swapping scenes
 function changeScenef(target, context, msg, self, commandName){
   // Bot types in chat
   client.say(target,`changeScene`);
@@ -166,7 +181,6 @@ function andthenf(target, context, msg, self, commandName){
         render: true,           // Enable visibility
         "scene-name": sceneMain
       });
- //     wait(waitPeriod*1000);
     })
     .catch(err => {
       console.log(err);
@@ -191,7 +205,6 @@ function andthenf(target, context, msg, self, commandName){
         render: true,           // Enable visibility
         "scene-name": sceneMain
       });
- //     wait(waitPeriod*1000);
     })
     .catch(err => {
       console.log(err);
@@ -199,20 +212,4 @@ function andthenf(target, context, msg, self, commandName){
     counter1++;
     console.log(`* Executed ${commandName} command`);     
   }
-/*
-  obs.send('GetSceneList')
-  .then(data => {
-    //console.log(data);
-    obs.send('SetSceneItemRender', {
-      source: sourceMain,
-      render: false,          // Disable visibility
-      "scene-name": sceneMain
-    });
-    obs.send('SetSceneItemRender', {
-      source: sourceMainEx,
-      render: false,          // Disable visibility
-      "scene-name": sceneMain
-    });
-  })
-*/
 }
