@@ -16,14 +16,18 @@ const opts = {
     password: 'oauth:pmmx576vhmbxa245chdyk5z8tctuaz'    //from https://twitchapps.com/tmi/
   },
   channels: [
-    'urgableh'
-  ]
+    'jonathanong'
+  ],
+  connection: {
+    server: 'irc-ws.chat.twitch.tv',
+    port: 80
+  }
 };
 
 // Scene and source constants
-const sceneMain = 'Screen Capture 2'
-const sourceMain = 'Andthen'
-const sourceMainEx = 'NoAndthen'
+const sceneMain = 'GRANDPIANO'
+const sourceMain = 'and then'
+const sourceMainEx = 'no and then'
 const waitPeriod = 15           // Global cooldown (s) when triggering alerts to disable again
 
 // Create a client with our options
@@ -48,7 +52,10 @@ client.on('message', onMessageHandler);
 client.on('connected', onConnectedHandler);
 
 // Connect to Twitch:
-client.connect();
+client.connect()
+.catch(err => {
+  console.log(err);
+});
 
 // Global variables for functions
 var counter1 = 1;
@@ -57,7 +64,7 @@ var coolingdown = false;
 // Called every time a message comes in
 function onMessageHandler (target, context, msg, self) {
   if (coolingdown) {    // If cooling down, keep monitoring chat but do not respond
-//    console.log('cooling down...');
+    console.log('cooling down...');
     return; 
   }
   else {
@@ -65,14 +72,6 @@ function onMessageHandler (target, context, msg, self) {
 
     // Remove whitespace from chat message
     const commandName = msg.trim();
-
-    // Changes scene between Screen Capture and Screen Capture 2
-    if (commandName === '!changeScene') {
-      changeScenef(target, context, msg, self, commandName);
-      coolingdown = true;   // sets a cooldown variable to true
-      setTimeout(cooldown, waitPeriod*1000);  // calls the function to re-enable commands
-      return;
-    }
 
     // Deactivates then reactivates the visibility of the Andthen alert in Screen Capture 2
     if (commandName === '!andthen') {
@@ -150,7 +149,7 @@ function andthenf(target, context, msg, self, commandName){
       console.log(err);
     });
     counter1++;
-//    console.log(`* Executed ${commandName} command`);     
+    console.log(`* Executed ${commandName} command`);     
   }
   else {     // Activate if counter1 is divisible by 5.
     client.say(target,`NO AND THEN!!`);
@@ -174,6 +173,6 @@ function andthenf(target, context, msg, self, commandName){
       console.log(err);
     });
     counter1++;
-//    console.log(`* Executed ${commandName} command`);     
+    console.log(`* Executed ${commandName} command`);     
   }
 }
