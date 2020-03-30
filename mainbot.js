@@ -23,6 +23,7 @@ const opts = {
 // Scene and source constants
 const sceneMain = 'Screen Capture 2'
 const sourceMain = 'Andthen'
+const sourceMainEx = 'NoAndthen'
 
 // Create a client with our options
 const client = new tmi.client(opts);
@@ -46,6 +47,9 @@ client.on('connected', onConnectedHandler);
 
 // Connect to Twitch:
 client.connect();
+
+// Global variables for functions
+var counter1 = 0;
 
 // Called every time a message comes in
 function onMessageHandler (target, context, msg, self) {
@@ -72,7 +76,7 @@ function onMessageHandler (target, context, msg, self) {
     andthenf(target, context, msg, self, commandName);
     return;
   }
-      
+
   else {
       console.log(`* Unknown command ${commandName}`);
   }
@@ -125,25 +129,52 @@ function changeScenef(target, context, msg, self, commandName){
 
 // function for andthen
 function andthenf(target, context, msg, self, commandName){
-  client.say(target,`AND THEN?!`);
-  obs.send('GetSceneList')
-  .then(data => {
-    //console.log(data);
-    obs.send('SetSceneItemRender', {
-      source: sourceMain,
-      render: false,          // Disable visibility
-      "scene-name": sceneMain
+  if (counter1%5 !== 0) {     // Activate if counter1 is not divisible by 5.
+    client.say(target,`AND THEN?!`);
+    obs.send('GetSceneList')
+    .then(data => {
+      //console.log(data);
+      obs.send('SetSceneItemRender', {
+        source: sourceMain,
+        render: false,          // Disable visibility
+        "scene-name": sceneMain
+      });
+      wait(100);  // Necessary to wait between setting attributes
+      // It was found that it would ignore one of the requests if it was too fast.
+      obs.send('SetSceneItemRender', {
+        source: sourceMain,
+        render: true,           // Enable visibility
+        "scene-name": sceneMain
+      });
+    })
+    .catch(err => {
+      console.log(err);
     });
-    wait(100);  // Necessary to wait between setting attributes
-    // It was found that it would ignore one of the requests if it was too fast.
-    obs.send('SetSceneItemRender', {
-      source: sourceMain,
-      render: true,           // Enable visibility
-      "scene-name": sceneMain
+    counter1++;
+    console.log(`* Executed ${commandName} command`);     
+  }
+  else {     // Activate if counter1 is divisible by 5.
+    client.say(target,`NO AND THEN!!`);
+    obs.send('GetSceneList')
+    .then(data => {
+      //console.log(data);
+      obs.send('SetSceneItemRender', {
+        source: sourceMainEx,
+        render: false,          // Disable visibility
+        "scene-name": sceneMain
+      });
+      wait(100);  // Necessary to wait between setting attributes
+      // It was found that it would ignore one of the requests if it was too fast.
+      obs.send('SetSceneItemRender', {
+        source: sourceMainEx,
+        render: true,           // Enable visibility
+        "scene-name": sceneMain
+      });
+    })
+    .catch(err => {
+      console.log(err);
     });
-  })
-  .catch(err => {
-    console.log(err);
-  });
-  console.log(`* Executed ${commandName} command`);
+    counter1++;
+    console.log(`* Executed ${commandName} command`);     
+  }
 }
