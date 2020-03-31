@@ -61,6 +61,7 @@ client.connect()
 // Global variables for functions
 var counter1 = 1;
 var coolingdown = false;
+var subonly = false;
 
 // Cooldown function that resets the cooldown and resets invisibility of sources
 function cooldown() {
@@ -83,21 +84,38 @@ function cooldown() {
 
 // Called every time a message comes in
 function onMessageHandler (target, context, msg, self) {
+  // Remove whitespace from chat message
+  const commandName = msg.trim();
+
   if (coolingdown) {    // If cooling down, keep monitoring chat but do not respond
     console.log('cooling down...');
     return; 
   }
+
   else {
     if (self) { return; } // Ignore messages from the bot
 
-    // Remove whitespace from chat message
-    const commandName = msg.trim();
+    var subbed = context.subscriber;
+    
+    if (context.username === `${opts.channels[0].split("#").pop()}` || context.mod === true) {
+      if (commandName === '!submode') {
+        submode(target, context, msg, self);
+        return;
+      }
+    }
+
+    // If sub mode is enabled and chatter is not a sub, then return.
+    if (subonly && !subbed) {
+      return;
+    }
+//    console.log(context);
 
     // If the command is known, let's execute it
     if (commandName === '!dice') {
       const num = rollDice();
       client.say(target, `You rolled a ${num}`);
       console.log(`* Executed ${commandName} command`);
+      return;
     } 
 
     // Changes scene between Screen Capture and Screen Capture 2
@@ -219,4 +237,19 @@ function andthenf(target, context, msg, self, commandName){
     counter1++;
     console.log(`* Executed ${commandName} command`);     
   }
+}
+
+function submode(target, context, msg, self, commandName){
+  subonly = !subonly;
+  var mode;
+  if (subonly === true) {
+    mode = 'sub only';
+  }
+  else {
+    mode = 'free for all';
+  }
+  client.say(target, `/me is in ${mode} mode.`)
+  .catch(err => {
+    console.log(err);
+  });
 }
