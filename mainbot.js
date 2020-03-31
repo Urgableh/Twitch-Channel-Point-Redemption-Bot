@@ -95,8 +95,9 @@ function onMessageHandler (target, context, msg, self) {
   else {
     if (self) { return; } // Ignore messages from the bot
 
-    var subbed = context.subscriber;
+    var subbed = context.subscriber;  // variable to check if message is from a subscriber
     
+    // Toggle submode if channel owner or moderator
     if (context.username === `${opts.channels[0].split("#").pop()}` || context.mod === true) {
       if (commandName === '!submode') {
         submode(target, context, msg, self);
@@ -108,7 +109,6 @@ function onMessageHandler (target, context, msg, self) {
     if (subonly && !subbed) {
       return;
     }
-//    console.log(context);
 
     // If the command is known, let's execute it
     if (commandName === '!dice') {
