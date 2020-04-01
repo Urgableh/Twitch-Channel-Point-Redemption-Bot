@@ -190,7 +190,7 @@ function changeScenef(target, context, msg, self, commandName){
 // function for andthen
 function andthenf(target, context, msg, self, commandName){
   if (counter1%5 !== 0) {     // Activate if counter1 is not divisible by 5.
-    client.say(target,`AND THEN?!`);
+    client.say(target,`AND THEN?! (${counter1})`);
     obs.send('GetSceneList')
     .then(data => {
       //console.log(data);
@@ -214,7 +214,7 @@ function andthenf(target, context, msg, self, commandName){
     console.log(`* Executed ${commandName} command`);     
   }
   else {     // Activate if counter1 is divisible by 5.
-    client.say(target,`NO AND THEN!!`);
+    client.say(target,`NO AND THEN!! (${counter1})`);
     obs.send('GetSceneList')
     .then(data => {
       //console.log(data);
