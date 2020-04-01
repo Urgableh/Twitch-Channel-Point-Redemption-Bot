@@ -12,8 +12,8 @@ const OBSWebSocket = require('obs-websocket-js');
 // Define configuration options
 const opts = {
   identity: {
-    username: 'urgabot',
-    password: 'oauth:pmmx576vhmbxa245chdyk5z8tctuaz'    //from https://twitchapps.com/tmi/
+    username: 'Jongcore',
+    password: 'oauth:8fgiuqhuvjxuyriyi0ti7nwicvmvne'    //from https://twitchapps.com/tmi/
   },
   channels: [
     'jonathanong'
