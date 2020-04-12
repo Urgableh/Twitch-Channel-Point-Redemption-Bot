@@ -64,8 +64,8 @@ var subonly = false;
 
 // Called every time a message comes in
 function onMessageHandler (target, context, msg, self) {
-  // Remove whitespace from chat message
-  const commandName = msg.trim();
+  // Remove whitespace from chat message and take the first word
+  const commandName = msg.trim().split(' ')[0];
 
   if (coolingdown) {    // If cooling down, keep monitoring chat but do not respond
     console.log('cooling down...');
