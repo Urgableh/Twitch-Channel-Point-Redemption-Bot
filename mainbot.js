@@ -2,13 +2,17 @@
 In cmd, install the following packages:
 npm install tmi.js
 npm install obs-websocket-js
+npm install --save twitch twitch-pubsub-client
 
 Twitch chatbot followed this guide: https://dev.twitch.tv/docs/irc
+
+package using 'pkg mainbot.js --targets node10-win-x64'
 */
 
 const tmi = require('tmi.js');
 const OBSWebSocket = require('obs-websocket-js');
- 
+const PubSubClient = require('twitch-pubsub-client').default; 
+
 // Define configuration options
 const opts = {
   identity: {
@@ -24,6 +28,8 @@ const opts = {
   }
 };
 
+TwitchClient.withCredentials(clientID: '')
+
 // Scene and source constants
 const sceneMain = 'Screen Capture 2'
 const sceneMain2 = 'AndthenScene'
@@ -34,6 +40,7 @@ const waitPeriod = 15           // Global cooldown (s) when triggering alerts to
 // Create a client with our options
 const client = new tmi.client(opts);
 const obs = new OBSWebSocket();
+const pubSubClient = new PubSubClient();
 
 obs.connect()
 .then(() => {
@@ -62,6 +69,14 @@ client.connect()
 var counter1 = 1;
 var coolingdown = false;
 var subonly = false;
+
+listener = pubSubClient.onRedemption((user, message) => {
+  console.log(message)
+  })
+  .catch(err => {
+    console.log(err);
+});
+
 
 // Cooldown function that resets the cooldown and resets invisibility of sources
 function cooldown() {
