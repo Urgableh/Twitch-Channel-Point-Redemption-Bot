@@ -11,7 +11,17 @@ package using 'pkg mainbot.js --targets node10-win-x64'
 
 const tmi = require('tmi.js');
 const OBSWebSocket = require('obs-websocket-js');
+const PubSubClient = require('twitch-pubsub-client').default;
+const request = require("request");
+const TwitchClient = require('twitch').default;
 
+// Define keys for pubsub
+const clientId = 'gp762nuuoqcoxypju8c569th9wz7q5';    //https://twitchtokengenerator.com/
+const accessToken = '3wni1fh3pbm8jxnys4b6p51zto8n3k'; //https://twitchtokengenerator.com/
+const clientSecret = '';
+const refreshToken = 'doasdx8z5iq1or4wrummgh8epppzufik6g8i66ypz95kvwhg8s';  //https://twitchtokengenerator.com/
+const channelId = '175541413';      // https://codepen.io/Alca/pen/yLBdjyb
+ 
 // Define configuration options
 const opts = {
   identity: {
@@ -27,6 +37,42 @@ const opts = {
   }
 };
 
+// Redemption function
+const runRedemption = async () => {
+  const twitchClient = TwitchClient.withCredentials(clientId, accessToken, undefined, {clientSecret, refreshToken, onRefresh: async (t) => {
+
+  }});
+ 
+  const pubSubClient = new PubSubClient();
+  await pubSubClient.registerUserListener(twitchClient);
+
+  pubSubClient.onRedemption(channelId, (message) => {
+      console.log(message);
+      obs.send('GetSceneList')
+      .then(data => {
+        //console.log(data);
+        obs.send('SetSceneItemRender', {
+          source: 'Shipscene',
+          render: false,          // Disable visibility
+          "scene-name": 'Screen Capture'
+        });
+        wait(100);  // Necessary to wait between setting attributes
+        // It was found that it would ignore one of the requests if it was too fast.
+        obs.send('SetSceneItemRender', {
+          source: 'Shipscene',
+          render: true,           // Enable visibility
+          "scene-name": 'Screen Capture'
+        });
+      })
+      .catch(err => {
+        console.log(err);
+      });
+      coolingdown = true;   // sets a cooldown variable to true
+      setTimeout(cooldown, 5*1000);  // calls the function to re-enable commands
+  });
+}
+// Run redemption bot
+runRedemption();
 
 // Scene and source constants
 const sceneMain = 'Screen Capture 2'
