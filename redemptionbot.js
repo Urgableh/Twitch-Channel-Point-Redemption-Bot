@@ -1,10 +1,10 @@
 //https://twitchtokengenerator.com/
 
 const clientId = 'gp762nuuoqcoxypju8c569th9wz7q5';
-const accessToken = '7hq6qxxv06iovje7oq42og253rxj3b';
+const accessToken = '3wni1fh3pbm8jxnys4b6p51zto8n3k';
 const clientSecret = '';
-const refreshToken = 'm541bkapkfyk1688uc00ju1232vtlvt0uq7f3osh5o215axeg6';
-const channelId = '175541413';
+const refreshToken = 'doasdx8z5iq1or4wrummgh8epppzufik6g8i66ypz95kvwhg8s';
+const channelId = '175541413';      // https://codepen.io/Alca/pen/yLBdjyb
  
 const PubSubClient = require('twitch-pubsub-client').default;
 const request = require("request");
