@@ -11,13 +11,12 @@ package using 'pkg mainbot.js --targets node10-win-x64'
 
 const tmi = require('tmi.js');
 const OBSWebSocket = require('obs-websocket-js');
-const PubSubClient = require('twitch-pubsub-client').default; 
 
 // Define configuration options
 const opts = {
   identity: {
     username: 'urgabot',
-    password: 'oauth:pmmx576vhmbxa245chdyk5z8tctuaz'    //from https://twitchapps.com/tmi/
+    password: 'oauth:sd3jp9xa33jj08r0dliequixh8u2gj'    //from https://twitchapps.com/tmi/
   },
   channels: [
     'urgableh'
@@ -28,7 +27,6 @@ const opts = {
   }
 };
 
-TwitchClient.withCredentials(clientID: '')
 
 // Scene and source constants
 const sceneMain = 'Screen Capture 2'
@@ -40,7 +38,6 @@ const waitPeriod = 15           // Global cooldown (s) when triggering alerts to
 // Create a client with our options
 const client = new tmi.client(opts);
 const obs = new OBSWebSocket();
-const pubSubClient = new PubSubClient();
 
 obs.connect()
 .then(() => {
@@ -69,14 +66,6 @@ client.connect()
 var counter1 = 1;
 var coolingdown = false;
 var subonly = false;
-
-listener = pubSubClient.onRedemption((user, message) => {
-  console.log(message)
-  })
-  .catch(err => {
-    console.log(err);
-});
-
 
 // Cooldown function that resets the cooldown and resets invisibility of sources
 function cooldown() {

@@ -1,21 +1,26 @@
-const tmi = require('tmi.js');
-const OBSWebSocket = require('obs-websocket-js');
+//https://twitchtokengenerator.com/
+
+const clientId = 'gp762nuuoqcoxypju8c569th9wz7q5';
+const accessToken = '7hq6qxxv06iovje7oq42og253rxj3b';
+const clientSecret = '';
+const refreshToken = 'm541bkapkfyk1688uc00ju1232vtlvt0uq7f3osh5o215axeg6';
+const channelId = '175541413';
+ 
 const PubSubClient = require('twitch-pubsub-client').default;
+const request = require("request");
 const TwitchClient = require('twitch').default;
-
-const clientId = 'dyoqxvurvq113l0ugaa43r1la3j46z';
-const accessToken = '906nr7hhet968xwtsp9xe1kjznjlt9';
-
-const twitchClient = TwitchClient.withCredentials(clientId, accessToken);
-const pubSubClient = new PubSubClient();
-
-pubSubClient.registerUserListener(twitchClient,175541413);
-
-//const tokenInfo = TwitchClient.getTokenInfo(accessToken);
-//console.log(tokenInfo.userName);
-
-pubSubClient.getUserListener('175541413');
-
-pubSubClient.onRedemption(user, message => {
-    console.log(message);
-});
+ 
+const run = async () => {
+    const twitchClient = TwitchClient.withCredentials(clientId, accessToken, undefined, {clientSecret, refreshToken, onRefresh: async (t) => {
+ 
+    }});
+   
+    const pubSubClient = new PubSubClient();
+    await pubSubClient.registerUserListener(twitchClient);
+ 
+    pubSubClient.onRedemption(channelId, (message) => {
+        console.log(message);
+    });
+}
+ 
+run();
