@@ -1,0 +1,4 @@
+Scene,Source,Duration,Redemption,Command
+Screen Capture 2,Andthen,15,FALSE,!andthen
+Screen Capture 2,NoAndthen,15,FALSE,!noandthen
+Screen Capture 2,Media Source,90,FALSE,!recap

@@ -9,6 +9,34 @@ Twitch chatbot followed this guide: https://dev.twitch.tv/docs/irc
 package using 'pkg mainbot.js --targets node10-win-x64'
 */
 
+const fs = require('fs');
+
+// Reads a file in the same directory
+fs.readFile('data.csv', function (err, data) {
+  processData(data);
+})
+
+// Processes a csv into "lines" variable by splitting
+function processData(allText) {
+  allText = allText + '';
+  var allTextLines = allText.split(/\r\n|\n/);
+  var headers = allTextLines[0].split(',');
+  var lines = [];
+
+  for (var i=1; i<allTextLines.length; i++) {
+      var data = allTextLines[i].split(',');
+      if (data.length == headers.length) {
+
+          var tarr = [];
+          for (var j=0; j<headers.length; j++) {
+              tarr.push(headers[j]+":"+data[j]);
+          }
+          lines.push(tarr);
+      }
+  }
+  console.log(lines);
+}
+
 const tmi = require('tmi.js');
 const OBSWebSocket = require('obs-websocket-js');
 const PubSubClient = require('twitch-pubsub-client').default;
@@ -91,6 +119,7 @@ obs.connect()
     return obs.send('GetSceneList');
 })
 .then(data => {
+    console.log(data);
     console.log(`${data.scenes.length} Available Scenes!`);
 })
 .catch(err => { // Promise convention dicates you have a catch on every chain.
