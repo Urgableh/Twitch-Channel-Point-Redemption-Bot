@@ -10,18 +10,29 @@ package using 'pkg mainbot.js --targets node10-win-x64'
 */
 
 const fs = require('fs');
+const util = require('util');
+const tmi = require('tmi.js');
+const OBSWebSocket = require('obs-websocket-js');
+const PubSubClient = require('twitch-pubsub-client').default;
+const request = require("request");
+const TwitchClient = require('twitch').default;
 
+var obsData = [];
+var credentialsData = [];
+
+function readData() {
 // Reads a file in the same directory
-fs.readFile('data.csv', function (err, data) {
-  processData(data);
-})
+  var text1 = fs.readFileSync('data.csv', 'utf8');
+  processData(text1, obsData);
+  var text2 = fs.readFileSync('credentials.csv', 'utf8');
+  processData(text2, credentialsData);
+}
 
 // Processes a csv into "lines" variable by splitting
-function processData(allText) {
+function processData(allText, lines) {
   allText = allText + '';
   var allTextLines = allText.split(/\r\n|\n/);
   var headers = allTextLines[0].split(',');
-  var lines = [];
 
   for (var i=1; i<allTextLines.length; i++) {
       var data = allTextLines[i].split(',');
@@ -29,35 +40,32 @@ function processData(allText) {
 
           var tarr = [];
           for (var j=0; j<headers.length; j++) {
-              tarr.push(headers[j]+":"+data[j]);
+              tarr.push([headers[j],data[j]]);
           }
           lines.push(tarr);
       }
   }
-  console.log(lines);
+  //console.log(lines);
 }
 
-const tmi = require('tmi.js');
-const OBSWebSocket = require('obs-websocket-js');
-const PubSubClient = require('twitch-pubsub-client').default;
-const request = require("request");
-const TwitchClient = require('twitch').default;
+// Execute data reading and storage
+readData();
 
 // Define keys for pubsub
-const clientId = 'gp762nuuoqcoxypju8c569th9wz7q5';    //https://twitchtokengenerator.com/
-const accessToken = '3wni1fh3pbm8jxnys4b6p51zto8n3k'; //https://twitchtokengenerator.com/
-const clientSecret = '';
-const refreshToken = 'doasdx8z5iq1or4wrummgh8epppzufik6g8i66ypz95kvwhg8s';  //https://twitchtokengenerator.com/
-const channelId = '175541413';      // https://codepen.io/Alca/pen/yLBdjyb
+const clientId = credentialsData[0][1][1];    //https://twitchtokengenerator.com/
+const accessToken = credentialsData[1][1][1]; //https://twitchtokengenerator.com/
+const clientSecret = credentialsData[2][1][1];
+const refreshToken = credentialsData[3][1][1];  //https://twitchtokengenerator.com/
+const channelId = credentialsData[4][1][1];      // https://codepen.io/Alca/pen/yLBdjyb
  
 // Define configuration options
 const opts = {
   identity: {
-    username: 'urgabot',
-    password: 'oauth:sd3jp9xa33jj08r0dliequixh8u2gj'    //from https://twitchapps.com/tmi/
+    username: credentialsData[5][1][1],
+    password: credentialsData[6][1][1]    //from https://twitchapps.com/tmi/
   },
   channels: [
-    'urgableh'
+    credentialsData[7][1][1]
   ],
   connection: {
     server: 'irc-ws.chat.twitch.tv',
