@@ -73,7 +73,7 @@ const opts = {
   }
 };
 
-console.log(obsData);
+// console.log(obsData);
 
 // Redemption function
 const runRedemption = async () => {
@@ -86,8 +86,8 @@ const runRedemption = async () => {
 
   pubSubClient.onRedemption(channelId, (message) => {
     var redemptionName = message.rewardName;
-    console.log(message);
-    console.log(obsData);
+    //console.log(message);
+    //console.log(obsData);
     var i;
     for (i=0; i < obsData.length - 1; i++) {
       if (redemptionName == obsData[i][1][1]) {
@@ -170,11 +170,11 @@ const obs = new OBSWebSocket();
 
 obs.connect()
 .then(() => {
-    console.log(`Success! We're connected & authenticated.`);
+    console.log(`Success! We're connected & authenticated to OBS.`);
     return obs.send('GetSceneList');
 })
 .then(data => {
-    console.log(data);
+    //console.log(data);
     console.log(`${data.scenes.length} Available Scenes!`);
 })
 .catch(err => { // Promise convention dicates you have a catch on every chain.
