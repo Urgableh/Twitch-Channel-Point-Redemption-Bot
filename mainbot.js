@@ -73,6 +73,8 @@ const opts = {
   }
 };
 
+console.log(obsData);
+
 // Redemption function
 const runRedemption = async () => {
   const twitchClient = TwitchClient.withCredentials(clientId, accessToken, undefined, {clientSecret, refreshToken, onRefresh: async (t) => {
@@ -82,6 +84,50 @@ const runRedemption = async () => {
   const pubSubClient = new PubSubClient();
   await pubSubClient.registerUserListener(twitchClient);
 
+  pubSubClient.onRedemption(channelId, (message) => {
+    var redemptionName = message.rewardName;
+    console.log(message);
+    console.log(obsData);
+    var i;
+    for (i=0; i < obsData.length - 1; i++) {
+      if (redemptionName == obsData[i][1][1]) {
+        obs.send('GetSceneList')
+        .then(data => {
+          //console.log(data);
+          obs.send('SetSceneItemRender', {
+            source: redemptionName,
+            render: false,          // Disable visibility
+            "scene-name": obsData[i][0][1]
+          });
+          wait(100);  // Necessary to wait between setting attributes
+          // It was found that it would ignore one of the requests if it was too fast.
+          obs.send('SetSceneItemRender', {
+            source: redemptionName,
+            render: true,           // Enable visibility
+            "scene-name": obsData[i][0][1]
+          });
+        })
+        .catch(err => {
+          console.log(err);
+        });
+        setTimeout(function() {
+          obs.send('GetSceneList')
+          .then(data => {
+            //console.log(data);
+            obs.send('SetSceneItemRender', {
+              source: redemptionName,
+              render: false,          // Disable visibility
+              "scene-name": obsData[i][0][1]
+            });
+          })
+        }, (parseFloat(obsData[i][2][1]) + 3)*1000);
+        //setTimeout(cooldownRedeem(redemptionName, obsData[i][0][1]), (obsData[i][2][1] + 3)*1000);
+      }
+    }
+  })
+}
+
+/*
   pubSubClient.onRedemption(channelId, (message) => {
       console.log(message);
       obs.send('GetSceneList')
@@ -107,6 +153,7 @@ const runRedemption = async () => {
       setTimeout(cooldown, 5*1000);  // calls the function to re-enable commands
   });
 }
+*/
 // Run redemption bot
 runRedemption();
 
