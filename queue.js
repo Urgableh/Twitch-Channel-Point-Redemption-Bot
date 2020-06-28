@@ -109,34 +109,21 @@ function onConnectedHandler (addr, port) {
 var queue = require('queue');
 var q = queue();
 var results = [];
+var temp;
 
 function runningQueue(str, time) {
     console.log(str);
     q.stop();
-    setTimeout(startqueue, time*1000);
+    q.timeout = 99999;
+    if (temp) {
+      clearTimeout(temp);
+    }
+    temp = setTimeout(startqueue, time*1000);
 }
 
 function startqueue() {
   q.start();
 }
-
-q.push(function (run) {
-  runningQueue.timeout = null;
-  results.push(runningQueue('first',3));
-  run();
-})
-
-q.push(function (run) {
-  runningQueue.timeout = null;
-  results.push(runningQueue('second',5));
-  run();
-})
-
-q.push(function (run) {
-  runningQueue.timeout = null;
-  results.push(runningQueue('third',4));
-  run();
-})
 
 // begin processing, get notified on end / failure
 q.start(function (err) {
