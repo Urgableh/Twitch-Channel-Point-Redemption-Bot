@@ -132,8 +132,8 @@ var results = [];
 var temp;
 
 function runningQueue(str, time) {
+    q.stop();  
     console.log(str);
-    q.stop();
     q.timeout = 99999;
     if (temp) {
       clearTimeout(temp);
