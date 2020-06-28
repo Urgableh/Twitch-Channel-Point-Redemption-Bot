@@ -80,13 +80,33 @@ function onMessageHandler (target, context, msg, self) {
 
   if (self) { return; } // Ignore messages from the bot
 
+  else if (commandName === '!qon'){
+    q.start();
+  }
+  
+  else if (commandName === '!qoff'){
+    q.stop();
+  }
+
   else {
     q.push(function (run) {
-      results.push(runningQueue('first1',2));
+      results.push(runningQueue(commandName + "1",2));
       run();
     })
     q.push(function (run) {
-      results.push(runningQueue('first2',2));
+      results.push(runningQueue(commandName + "2",2));
+      run();
+    })
+    q.push(function (run) {
+      results.push(runningQueue(commandName + "3",2));
+      run();
+    })
+    q.push(function (run) {
+      results.push(runningQueue(commandName + "4",2));
+      run();
+    })
+    q.push(function (run) {
+      results.push(runningQueue(commandName + "5",2));
       run();
     })
     console.log(`* Unknown command ${commandName}`);
