@@ -81,7 +81,8 @@ function onMessageHandler (target, context, msg, self) {
   if (self) { return; } // Ignore messages from the bot
 
   else {
-    redeemqueue.append(new redeemMedia("hi", false));
+    console.log(commandName);
+    redeemqueue.append(new redeemMedia(commandName, 10000, false));
   }
 
 }
@@ -128,9 +129,9 @@ class RedeemQueue extends EventQueue {
       super(3350); // delay 3.35 seconds
   }
 
-  append(item, quiet=false) {
+  append(item, duration, quiet=false) {
       if (quiet) { this.pointer += 1; }
-      this.queue.push(new redeemMedia(item));
+      this.queue.push(new redeemMedia(item, duration));
   }
 
 }
@@ -144,7 +145,7 @@ class OnScreenEvent {
    * payload is a dom tree node
    * duration is the time is stays on screen (in msec)
    */
-  constructor(duration=0, payload=null) {
+  constructor(duration=0, payload) {
       this.duration = duration;
       this.payload = payload;
   }
@@ -153,6 +154,7 @@ class OnScreenEvent {
   }
   end() {
     console.log(this.payload);
+    console.log("Executing thing");
   }
 }
 
@@ -162,13 +164,11 @@ class redeemMedia extends OnScreenEvent {
    * Stays on the screen for 30 seconds, there are 9 variants.
    */
 
-  constructor(payload, level=0) {
+  constructor(payload, duration) {
       /**
        * payload is the name of the subscriber.
        */
-      const duration = 2500;
-      console.log(payload);
       // call the parent constructor with this dom tree node as payload
-      super(duration);
+      super(duration, payload);
   }
 }
