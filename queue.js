@@ -76,6 +76,7 @@ client.connect()
 // Called every time a message comes in
 function onMessageHandler (target, context, msg, self) {
   // Remove whitespace from chat message and take the first word
+  var temp = false;
   const commandName = msg.trim().split(' ')[0];
 
   if (self) { return; } // Ignore messages from the bot
@@ -89,6 +90,9 @@ function onMessageHandler (target, context, msg, self) {
   }
 
   else {
+    if ( q.length == 0 ) {
+      temp = true;
+    }
     q.push(function (run) {
       results.push(runningQueue(commandName + "1",2));
       run();
@@ -110,7 +114,9 @@ function onMessageHandler (target, context, msg, self) {
       run();
     })
     console.log(`* Unknown command ${commandName}`);
-    q.start();
+    if (temp) {
+      q.start();
+    }
   }
 
 }
