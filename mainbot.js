@@ -51,18 +51,40 @@ function processData(allText, lines) {
 // Execute data reading and storage
 readData();
 
+// Define keys for pubsub
+const clientId = credentialsData[0][1][1];    //https://twitchtokengenerator.com/
+const accessToken = credentialsData[1][1][1]; //https://twitchtokengenerator.com/
+const clientSecret = credentialsData[2][1][1];
+const refreshToken = credentialsData[3][1][1];  //https://twitchtokengenerator.com/
+const channelId = credentialsData[4][1][1];      // https://codepen.io/Alca/pen/yLBdjyb
+ 
+// Define configuration options
+const opts = {
+  identity: {
+    username: credentialsData[5][1][1],
+    password: credentialsData[6][1][1]    //from https://twitchapps.com/tmi/
+  },
+  channels: [
+    credentialsData[7][1][1]
+  ],
+  connection: {
+    server: 'irc-ws.chat.twitch.tv',
+    port: 80
+  }
+};
+
 // Initiate Queue features
 var queue = require('queue');
 var q = queue();
 var results = [];
 var temp1 = [], j = 0, temp2;
-var tempRedemption = [];
 
-function runningQueue(redemptionName, sceneName, timeS) {
-  tempRedemption[j] = redemptionName;
+// Redemption obs function
+function runningQueue(redemptionName, sceneName, timeS, redeemerName) {
   q.stop();
   q.timeout = 99999;
   console.log(redemptionName);
+  redeemChat(redemptionName, redeemerName);
   obs.send('GetSceneList')
   .then(data => {
     //console.log(data);
@@ -109,38 +131,21 @@ function runningQueue(redemptionName, sceneName, timeS) {
   j++;
 }
 
+// Chatbot to say who's redemption is being fulfilled atm
+function redeemChat(redemptionName, redeemerName) {
+  client.say(opts.channels[0],`Playing ${redeemerName}'s ${redemptionName}`);
+}
+
+// Start queue
 function startqueue() {
   q.start();
 }
-
-// Define keys for pubsub
-const clientId = credentialsData[0][1][1];    //https://twitchtokengenerator.com/
-const accessToken = credentialsData[1][1][1]; //https://twitchtokengenerator.com/
-const clientSecret = credentialsData[2][1][1];
-const refreshToken = credentialsData[3][1][1];  //https://twitchtokengenerator.com/
-const channelId = credentialsData[4][1][1];      // https://codepen.io/Alca/pen/yLBdjyb
- 
-// Define configuration options
-const opts = {
-  identity: {
-    username: credentialsData[5][1][1],
-    password: credentialsData[6][1][1]    //from https://twitchapps.com/tmi/
-  },
-  channels: [
-    credentialsData[7][1][1]
-  ],
-  connection: {
-    server: 'irc-ws.chat.twitch.tv',
-    port: 80
-  }
-};
-
-// console.log(obsData);
 
 // Redemption internal function
 function inRedemption(channelId, message) {
   var timeS;
   var redemptionName = message.rewardName;
+  var redeemerName = message.userDisplayName;
   var sceneName;
   var i;
   for (i=0; i < obsData.length - 1; i++) {
@@ -149,11 +154,10 @@ function inRedemption(channelId, message) {
       timeS = (parseFloat(obsData[i][2][1]));
     }
   }
-  return [redemptionName, sceneName, timeS];
+  return [redemptionName, sceneName, timeS, redeemerName];
 }
 
-var k = 0;
-// Redemption function
+// Redemption from pubsub client
 const runRedemption = async () => {
   const twitchClient = TwitchClient.withCredentials(clientId, accessToken, undefined, {clientSecret, refreshToken, onRefresh: async (t) => {
 
@@ -173,7 +177,7 @@ const runRedemption = async () => {
     console.log("Redemption received");
     var redeemed = inRedemption(channelId, message);
     q.push(function (run) {
-      results.push(runningQueue(redeemed[0], redeemed[1], redeemed[2]))
+      results.push(runningQueue(redeemed[0], redeemed[1], redeemed[2], redeemed[3]))
       run();
     })
     q.push(function (run) {
@@ -214,7 +218,6 @@ obs.connect()
 });
 
 // Register our event handlers (defined below)
-
 client.on('message', onMessageHandler);
 client.on('connected', onConnectedHandler);
 
@@ -256,18 +259,6 @@ function onMessageHandler (target, context, msg, self) {
   if (coolingdown) {    // If cooling down, keep monitoring chat but do not respond
     console.log('cooling down...');
     return; 
-  }
-
-  if (commandName === '!qon'){
-    q.start();
-    q.autostart = true;
-    return;
-  }
-  
-  if (commandName === '!qoff'){
-    q.stop();
-    q.autostart = false;
-    return;
   }
 
   else {
