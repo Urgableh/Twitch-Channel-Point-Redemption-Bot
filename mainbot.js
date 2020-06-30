@@ -272,6 +272,11 @@ function onMessageHandler (target, context, msg, self) {
         submode(target, context, msg, self);
         return;
       }
+      if (commandName === '!clearqueue') {
+        q.end();
+        client.say(target, `Redemption queue has been cleared.`);
+        return;
+      }
     }
 
     // If sub mode is enabled and chatter is not a sub, then return.
