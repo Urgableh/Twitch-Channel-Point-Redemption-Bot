@@ -51,6 +51,68 @@ function processData(allText, lines) {
 // Execute data reading and storage
 readData();
 
+// Initiate Queue features
+var queue = require('queue');
+var q = queue();
+var results = [];
+var temp1 = [], j = 0, temp2;
+var tempRedemption = [];
+
+function runningQueue(redemptionName, sceneName, timeS) {
+  tempRedemption[j] = redemptionName;
+  q.stop();
+  q.timeout = 99999;
+  console.log(redemptionName);
+  obs.send('GetSceneList')
+  .then(data => {
+    //console.log(data);
+    obs.send('SetSceneItemRender', {
+      source: redemptionName,
+      render: false,          // Disable visibility
+      "scene-name": sceneName
+    })
+    .catch(err => {
+      console.log(err);
+    });
+    wait(100);  // Necessary to wait between setting attributes
+    // It was found that it would ignore one of the requests if it was too fast.
+    obs.send('SetSceneItemRender', {
+      source: redemptionName,
+      render: true,           // Enable visibility
+      "scene-name": sceneName
+    })
+    .catch(err => {
+      console.log(err);
+    });
+  })
+  .catch(err => {
+    console.log(err);
+  });
+  temp1[j] = setTimeout(function() {
+    obs.send('GetSceneList')
+    .then(data => {
+      //console.log(data);
+      obs.send('SetSceneItemRender', {
+        source: redemptionName,
+        render: false,          // Disable visibility
+        "scene-name": sceneName
+      })
+      .catch(err => {
+        console.log(err);
+      });
+    })
+  }, (timeS + 3)*1000);
+  if (temp2) {
+    clearTimeout(temp2);
+  }
+  temp2 = setTimeout(startqueue, (timeS+3)*1000);
+  j++;
+}
+
+function startqueue() {
+  q.start();
+}
+
 // Define keys for pubsub
 const clientId = credentialsData[0][1][1];    //https://twitchtokengenerator.com/
 const accessToken = credentialsData[1][1][1]; //https://twitchtokengenerator.com/
@@ -75,6 +137,22 @@ const opts = {
 
 // console.log(obsData);
 
+// Redemption internal function
+function inRedemption(channelId, message) {
+  var timeS;
+  var redemptionName = message.rewardName;
+  var sceneName;
+  var i;
+  for (i=0; i < obsData.length - 1; i++) {
+    if (redemptionName == obsData[i][1][1]) {
+      sceneName = obsData[i][0][1];
+      timeS = (parseFloat(obsData[i][2][1]));
+    }
+  }
+  return [redemptionName, sceneName, timeS];
+}
+
+var k = 0;
 // Redemption function
 const runRedemption = async () => {
   const twitchClient = TwitchClient.withCredentials(clientId, accessToken, undefined, {clientSecret, refreshToken, onRefresh: async (t) => {
@@ -83,77 +161,31 @@ const runRedemption = async () => {
  
   const pubSubClient = new PubSubClient();
   await pubSubClient.registerUserListener(twitchClient);
+  var temp = false;
 
   pubSubClient.onRedemption(channelId, (message) => {
-    var redemptionName = message.rewardName;
-    //console.log(message);
-    //console.log(obsData);
-    var i;
-    for (i=0; i < obsData.length - 1; i++) {
-      if (redemptionName == obsData[i][1][1]) {
-        obs.send('GetSceneList')
-        .then(data => {
-          //console.log(data);
-          obs.send('SetSceneItemRender', {
-            source: redemptionName,
-            render: false,          // Disable visibility
-            "scene-name": obsData[i][0][1]
-          });
-          wait(100);  // Necessary to wait between setting attributes
-          // It was found that it would ignore one of the requests if it was too fast.
-          obs.send('SetSceneItemRender', {
-            source: redemptionName,
-            render: true,           // Enable visibility
-            "scene-name": obsData[i][0][1]
-          });
-        })
-        .catch(err => {
-          console.log(err);
-        });
-        setTimeout(function() {
-          obs.send('GetSceneList')
-          .then(data => {
-            //console.log(data);
-            obs.send('SetSceneItemRender', {
-              source: redemptionName,
-              render: false,          // Disable visibility
-              "scene-name": obsData[i][0][1]
-            });
-          })
-        }, (parseFloat(obsData[i][2][1]) + 3)*1000);
-        //setTimeout(cooldownRedeem(redemptionName, obsData[i][0][1]), (obsData[i][2][1] + 3)*1000);
-      }
+    if ( q.length == 0 ) {
+      temp = true;
+    }
+    else {
+      temp = false;
+    }
+    console.log("Redemption received");
+    var redeemed = inRedemption(channelId, message);
+    q.push(function (run) {
+      results.push(runningQueue(redeemed[0], redeemed[1], redeemed[2]))
+      run();
+    })
+    q.push(function (run) {
+      results.push(console.log("Redemption complete"));
+      run();
+    })
+    if (temp){
+      q.start();
     }
   })
 }
 
-/*
-  pubSubClient.onRedemption(channelId, (message) => {
-      console.log(message);
-      obs.send('GetSceneList')
-      .then(data => {
-        //console.log(data);
-        obs.send('SetSceneItemRender', {
-          source: 'Shipscene',
-          render: false,          // Disable visibility
-          "scene-name": 'Screen Capture'
-        });
-        wait(100);  // Necessary to wait between setting attributes
-        // It was found that it would ignore one of the requests if it was too fast.
-        obs.send('SetSceneItemRender', {
-          source: 'Shipscene',
-          render: true,           // Enable visibility
-          "scene-name": 'Screen Capture'
-        });
-      })
-      .catch(err => {
-        console.log(err);
-      });
-      coolingdown = true;   // sets a cooldown variable to true
-      setTimeout(cooldown, 5*1000);  // calls the function to re-enable commands
-  });
-}
-*/
 // Run redemption bot
 runRedemption();
 
@@ -224,6 +256,18 @@ function onMessageHandler (target, context, msg, self) {
   if (coolingdown) {    // If cooling down, keep monitoring chat but do not respond
     console.log('cooling down...');
     return; 
+  }
+
+  if (commandName === '!qon'){
+    q.start();
+    q.autostart = true;
+    return;
+  }
+  
+  if (commandName === '!qoff'){
+    q.stop();
+    q.autostart = false;
+    return;
   }
 
   else {
