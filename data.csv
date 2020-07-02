@@ -1,0 +1,22 @@
+Scene,Source,Duration,Redemption,Command
+Screen Capture 2,Andthen,15,FALSE,!andthen
+Screen Capture 2,NoAndthen,15,FALSE,!noandthen
+Screen Capture 2,Media Source,90,FALSE,!recap
+Channel Points Reward Test,Black Hole,15,TRUE,
+Channel Points Reward Test,Cinema Avatar,65,TRUE,
+Channel Points Reward Test,Serenity,180,TRUE,
+Channel Points Reward Test,Mop Scene Box,10,TRUE,
+Channel Points Reward Test,Doctor Who,60,TRUE,
+Channel Points Reward Test,Pokemon,57,TRUE,
+Channel Points Reward Test,Fire Alarm Flood,25,TRUE,
+Channel Points Reward Test,ongDisco,8,TRUE,
+Channel Points Reward Test,2019 Recap,94,TRUE,
+Channel Points Reward Test,Last Ongbender,74,TRUE,
+Channel Points Reward Test,ongBankRobbery,50,TRUE,
+Channel Points Reward Test,ongPocalypseHQ,40,TRUE,
+Channel Points Reward Test,ongocatBox,15,TRUE,
+Channel Points Reward Test,SnowBorderlineBlizzard,16,TRUE,
+Channel Points Reward Test,UltimateDraft4,171,TRUE,
+Channel Points Reward Test,ongWowMoney,10,TRUE,
+Channel Points Reward Test,Incoming,12,TRUE,
+Channel Points Reward Test,EOF,EOF,EOF,EOF
