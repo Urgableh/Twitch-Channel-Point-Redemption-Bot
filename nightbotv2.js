@@ -1,3 +1,14 @@
+/*
+In cmd, install the following packages:
+npm install tmi.js
+npm install obs-websocket-js
+npm install --save twitch twitch-pubsub-client
+
+Twitch chatbot followed this guide: https://dev.twitch.tv/docs/irc
+
+package using 'pkg mainbot.js --targets node10-win-x64'
+*/
+
 const fs = require('fs');
 const util = require('util');
 const tmi = require('tmi.js');
@@ -54,15 +65,17 @@ const opts = {
     password: credentialsData[6][1][1]    //from https://twitchapps.com/tmi/
   },
   channels: [
-    credentialsData[7][1][1]
+    //'bryceac'//credentialsData[7][1][1]
   ],
   connection: {
     server: 'irc-ws.chat.twitch.tv',
     port: 80
   }
 };
+
 // Create a client with our options
 const client = new tmi.client(opts);
+
 // Register our event handlers (defined below)
 client.on('message', onMessageHandler);
 client.on('connected', onConnectedHandler);
@@ -80,95 +93,20 @@ function onMessageHandler (target, context, msg, self) {
 
   if (self) { return; } // Ignore messages from the bot
 
-  else {
-    console.log(commandName);
-    redeemqueue.append(new redeemMedia(commandName, 10000, false));
+  if (commandName === "helo") {
+    client.say(target, 'bai VoHiYo');
+    return;
   }
-
+  else {
+      console.log(`* Unknown command ${commandName}`);
+  }
+  
 }
+
+//////// FUNCTION DEFINITIONS BELOW ////////
 
 // Called every time the bot connects to Twitch chat
 function onConnectedHandler (addr, port) {
   //  client.say(opts.channels[0],'/me is now running.');
   console.log(`* Connected to ${addr}:${port}`);
-}
-
-
-class EventQueue {
-  /**
-   * Base queue of events to be run in order.
-   */
-  constructor(delay=0) {
-
-      this.pointer = 0;
-      this.queue = [];
-      this.delay = delay;
-      this.schedule_id = setInterval(this.process_queue.bind(this), delay);
-
-  }
-
-  process_queue() {
-      if (this.queue.length <= this.pointer) return; // nothing to do.
-      this.queue[this.pointer].run();
-      this.pointer++;
-  }
-
-  reset() {
-      this.queue = [];
-      this.pointer = 0;
-  }
-}
-
-class RedeemQueue extends EventQueue {
-  /**
-   * Specific queue of subscriber events.
-   *
-   * The delay for this one is 3.35 seconds.
-   */
-  constructor() {
-      super(3350); // delay 3.35 seconds
-  }
-
-  append(item, duration, quiet=false) {
-      if (quiet) { this.pointer += 1; }
-      this.queue.push(new redeemMedia(item, duration));
-  }
-
-}
-
-var redeemqueue = new RedeemQueue();
-
-class OnScreenEvent {
-  /**
-   * On screen events. Things to show on screen for a limited time.
-   *
-   * payload is a dom tree node
-   * duration is the time is stays on screen (in msec)
-   */
-  constructor(duration=0, payload) {
-      this.duration = duration;
-      this.payload = payload;
-  }
-  run() {
-      this.interval_id = setTimeout(this.end.bind(this), this.duration);
-  }
-  end() {
-    console.log(this.payload);
-    console.log("Executing thing");
-  }
-}
-
-class redeemMedia extends OnScreenEvent {
-  /**
-   * A marching Jonathan holding a sign of the newest subscriber.
-   * Stays on the screen for 30 seconds, there are 9 variants.
-   */
-
-  constructor(payload, duration) {
-      /**
-       * payload is the name of the subscriber.
-       */
-      // call the parent constructor with this dom tree node as payload
-      super(duration, payload);
-  }
 }
