@@ -162,12 +162,13 @@ function startqueue() {
 // Redemption internal function
 function inRedemption(channelId, message) {
   var timeS;
-  var redemptionName = message.rewardName;
+  var redemptionName = null;
   var redeemerName = message.userDisplayName;
   var sceneName = null;
   var i;
   for (i=0; i < obsData.length - 1; i++) {
-    if (redemptionName == obsData[i][1][1]) {
+    if (message.rewardName == obsData[i][4][1]) {
+      redemptionName = obsData[i][1][1];
       sceneName = obsData[i][0][1];
       timeS = (parseFloat(obsData[i][2][1]));
     }
