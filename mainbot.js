@@ -212,9 +212,10 @@ const runRedemption = async () => {
 runRedemption();
 
 // Scene and source constants
-const sceneMain = 'GRANDPIANO'
-const sourceMain = 'and then'
-const sourceMainEx = 'no and then'
+const sceneMain = 'Screen Capture 2'
+const sceneMain2 = 'AndthenScene'
+const sourceMain = 'Andthen'
+const sourceMainEx = 'NoAndthen'
 const waitPeriod = 15           // Global cooldown (s) when triggering alerts to disable again
 
 // Create a client with our options
