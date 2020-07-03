@@ -1,22 +1,3 @@
 Scene,Source,Duration,Redemption,Command
-Screen Capture 2,Andthen,15,FALSE,!andthen
-Screen Capture 2,NoAndthen,15,FALSE,!noandthen
-Screen Capture 2,Media Source,90,FALSE,!recap
-Channel Points Reward Test,Black Hole,15,TRUE,Black Hole
-Channel Points Reward Test,Cinema Avatar,65,TRUE,Cinema Avatar
-Channel Points Reward Test,Serenity,180,TRUE,Serenity
-Channel Points Reward Test,Mop Scene Box,10,TRUE,Mop Scene Box
-Channel Points Reward Test,Doctor Who,60,TRUE,Doctor Who
-Channel Points Reward Test,Pokemon,57,TRUE,Pokemon
-Channel Points Reward Test,Fire Alarm Flood,25,TRUE,Fire Alarm Flood
-Channel Points Reward Test,ongDisco,8,TRUE,ongDisco
-Channel Points Reward Test,2019 Recap,94,TRUE,2019 Recap
-Channel Points Reward Test,Last Ongbender,74,TRUE,Last Ongbender
-Channel Points Reward Test,ongBankRobbery,50,TRUE,ongBankRobbery
-Channel Points Reward Test,ongPocalypseHQ,40,TRUE,ongPocalypseHQ
-Channel Points Reward Test,ongocatBox,15,TRUE,ongocatBox
-Channel Points Reward Test,SnowBorderlineBlizzard,16,TRUE,SnowBorderlineBlizzard
-Channel Points Reward Test,UltimateDraft4,171,TRUE,UltimateDraft4
-Channel Points Reward Test,ongWowMoney,10,TRUE,ongWowMoney
-Channel Points Reward Test,Incoming,12,TRUE,Incoming
-Channel Points Reward Test,EOF,EOF,EOF,EOF
+GRANDPIANO,blackhole,15,TRUE,MAKE THE ULTIMATE STATEMENT
+GRANDPIANO,EOF,EOF,EOF,EOF
