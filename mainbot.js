@@ -81,54 +81,72 @@ var temp1 = [], j = 0, temp2;
 
 // Redemption obs function
 function runningQueue(redemptionName, sceneName, timeS, redeemerName) {
+  var sceneMatch = false, sourceMatch = false;
   q.stop();
   q.timeout = 99999;
   console.log(redemptionName);
-  redeemChat(redemptionName, redeemerName);
   obs.send('GetSceneList')
   .then(data => {
-    //console.log(data);
-    obs.send('SetSceneItemRender', {
-      source: redemptionName,
-      render: false,          // Disable visibility
-      "scene-name": sceneName
-    })
-    .catch(err => {
-      console.log(err);
-    });
-    wait(100);  // Necessary to wait between setting attributes
-    // It was found that it would ignore one of the requests if it was too fast.
-    obs.send('SetSceneItemRender', {
-      source: redemptionName,
-      render: true,           // Enable visibility
-      "scene-name": sceneName
-    })
-    .catch(err => {
-      console.log(err);
-    });
-  })
-  .catch(err => {
-    console.log(err);
-  });
-  temp1[j] = setTimeout(function() {
-    obs.send('GetSceneList')
+    obs.send('GetCurrentScene')
     .then(data => {
-      //console.log(data);
-      obs.send('SetSceneItemRender', {
-        source: redemptionName,
-        render: false,          // Disable visibility
-        "scene-name": sceneName
-      })
-      .catch(err => {
-        console.log(err);
-      });
+        if (data.name == sceneName) {
+          sceneMatch = true;
+        }
+        for (i=0; i< data.sources.length - 1; i++) {
+          if (data.sources[i].name == redemptionName) {
+            sourceMatch = true;
+          }
+        }
     })
-  }, (timeS + 3)*1000);
-  if (temp2) {
-    clearTimeout(temp2);
-  }
-  temp2 = setTimeout(startqueue, (timeS+3)*1000);
-  j++;
+    .then(data => {
+      if (sceneMatch == true && sourceMatch == true) {
+        redeemChat(redemptionName, redeemerName);
+        obs.send('SetSceneItemRender', {
+          source: redemptionName,
+          render: false,          // Disable visibility
+          "scene-name": sceneName
+        })
+        .catch(err => {
+          console.log(err);
+        });
+        wait(100);  // Necessary to wait between setting attributes
+        // It was found that it would ignore one of the requests if it was too fast.
+        obs.send('SetSceneItemRender', {
+          source: redemptionName,
+          render: true,           // Enable visibility
+          "scene-name": sceneName
+        })
+        .catch(err => {
+          console.log(err);
+        });
+
+        temp1[j] = setTimeout(function() {
+          obs.send('GetSceneList')
+          .then(data => {
+            //console.log(data);
+            obs.send('SetSceneItemRender', {
+              source: redemptionName,
+              render: false,          // Disable visibility
+              "scene-name": sceneName
+            })
+            .catch(err => {
+              console.log(err);
+            });
+          })
+        }, (timeS + 3)*1000);
+        if (temp2) {
+          clearTimeout(temp2);
+        }
+        temp2 = setTimeout(startqueue, (timeS+3)*1000);
+        j++;
+      }
+      else {
+        console.log(redemptionName + " is not a recognised alert redemption in the current scene.");
+        startqueue();
+      }
+    })
+    //console.log(data);   
+  })
 }
 
 // Chatbot to say who's redemption is being fulfilled atm
@@ -146,7 +164,7 @@ function inRedemption(channelId, message) {
   var timeS;
   var redemptionName = message.rewardName;
   var redeemerName = message.userDisplayName;
-  var sceneName;
+  var sceneName = null;
   var i;
   for (i=0; i < obsData.length - 1; i++) {
     if (redemptionName == obsData[i][1][1]) {
