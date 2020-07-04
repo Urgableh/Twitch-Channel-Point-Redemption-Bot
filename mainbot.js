@@ -87,8 +87,20 @@ function runningQueue(redemptionName, sceneName, timeS, redeemerName) {
   console.log(redemptionName);
   obs.send('GetSceneList')
   .then(data => {
+    // If the alert scene collection is implanted in the current scene
+    for (i=0; i<data.scenes.length - 1; i++) {
+      if (data.scenes[i].name == sceneName) {
+        sceneMatch = true;
+        for (j=0; j<data.scenes[i].sources.length; j++) {
+          if (data.scenes[i].sources[j].name == redemptionName) {
+            sourceMatch = true;
+          }
+        }
+      }
+    }
     obs.send('GetCurrentScene')
     .then(data => {
+        // If the alert scene is in the current scene
         if (data.name == sceneName) {
           sceneMatch = true;
         }
