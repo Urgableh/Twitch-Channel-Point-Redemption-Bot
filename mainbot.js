@@ -112,7 +112,7 @@ function runningQueue(redemptionName, sceneName, timeS, redeemerName) {
     })
     .then(data => {
       if (sceneMatch == true && sourceMatch == true) {
-        redeemChat(redemptionName, redeemerName);
+        //redeemChat(redemptionName, redeemerName);
         obs.send('SetSceneItemRender', {
           source: redemptionName,
           render: false,          // Disable visibility
@@ -351,7 +351,7 @@ function wait(ms){
 // function for andthen
 function andthenf(target, context, msg, self, commandName){
   if (counter1%5 !== 0) {     // Activate if counter1 is not divisible by 5.
-    client.say(target,`AND THEN?! (${counter1})`);
+    //client.say(target,`AND THEN?! (${counter1})`);
     obs.send('GetSceneList')
     .then(data => {
       //console.log(data);
@@ -375,7 +375,7 @@ function andthenf(target, context, msg, self, commandName){
     console.log(`* Executed ${commandName} command`);     
   }
   else {     // Activate if counter1 is divisible by 5.
-    client.say(target,`NO AND THEN!! (${counter1})`);
+    //client.say(target,`NO AND THEN!! (${counter1})`);
     obs.send('GetSceneList')
     .then(data => {
       //console.log(data);
