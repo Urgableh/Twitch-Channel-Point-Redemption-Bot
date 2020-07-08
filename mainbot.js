@@ -199,7 +199,6 @@ const runRedemption = async () => {
   var temp = false;
 
   pubSubClient.onRedemption(channelId, (message) => {
-    console.log(message);
     if ( q.length == 0 ) {
       temp = true;
     }
@@ -260,14 +259,17 @@ client.connect()
 });
 
 // Global variables for functions
-var counter1 = 1;
 var coolingdown = false;
 var subonly = false;
+var sourceName = null;
+var sceneName = null;
+var timeS = null;
 
 // Called every time a message comes in
 function onMessageHandler (target, context, msg, self) {
   // Remove whitespace from chat message and take the first word
   const commandName = msg.trim().split(' ')[0];
+
 
   if (coolingdown) {    // If cooling down, keep monitoring chat but do not respond
     console.log('cooling down...');
@@ -285,12 +287,6 @@ function onMessageHandler (target, context, msg, self) {
         submode(target, context, msg, self);
         return;
       }
-//      THIS FEATURE CAN BE ABUSED TO BREAK THE TIMEOUT FUNCTIONS
-//      if (commandName === '!clearqueue') {
-//        q.end();
-//        client.say(target, `Redemption queue has been cleared.`);
-//        return;
-//      }
     }
 
     // If sub mode is enabled and chatter is not a sub, then return.
@@ -298,20 +294,22 @@ function onMessageHandler (target, context, msg, self) {
       return;
     }
 
-    // Deactivates then reactivates the visibility of the Andthen alert in Screen Capture 2
-    if (commandName === '!andthen') {
-      andthenf(target, context, msg, self, commandName);
-      coolingdown = true;   // sets a cooldown variable to true
-      setTimeout(cooldown, waitPeriod*1000);  // calls the function to re-enable commands
-      return;
-    }
+    else {    
+      for (i=0; i < obsData.length - 1; i++) {
+        if (commandName == obsData[i][4][1] && obsData[i][3][1] == 'FALSE') {
+          sourceName = obsData[i][1][1];
+          sceneName = obsData[i][0][1];
+          timeS = (parseFloat(obsData[i][2][1]));
 
-    else {
+          activateSource(commandName, sourceName, sceneName);
+          coolingdown = true;   // sets a cooldown variable to true
+          setTimeout(cooldown, timeS*1000);  // calls the function to re-enable commands
+          return;
+        }
+      }
+    }
       //  console.log(`* Unknown command ${commandName}`);
-    }
-
   }
-  
 }
 
 //////// FUNCTION DEFINITIONS BELOW ////////
@@ -329,14 +327,9 @@ function cooldown() {
   .then(data => {
     //console.log(data);
     obs.send('SetSceneItemRender', {
-      source: sourceMain,
+      source: sourceName,
       render: false,          // Disable visibility
-      "scene-name": sceneMain
-    });
-    obs.send('SetSceneItemRender', {
-      source: sourceMainEx,
-      render: false,          // Disable visibility
-      "scene-name": sceneMain
+      "scene-name": sceneName
     });
   })
 }
@@ -350,56 +343,21 @@ function wait(ms){
  }
 }
 
-// function for andthen
-function andthenf(target, context, msg, self, commandName){
-  if (counter1%5 !== 0) {     // Activate if counter1 is not divisible by 5.
-    client.say(target,`AND THEN?! (${counter1})`);
+
+function activateSource(commandName, sourceName, sceneName){
     obs.send('GetSceneList')
     .then(data => {
       //console.log(data);
-      obs.send('SetSceneItemRender', {
-        source: sourceMain,
-        render: false,          // Disable visibility
-        "scene-name": sceneMain
-      });
-      wait(100);  // Necessary to wait between setting attributes
-      // It was found that it would ignore one of the requests if it was too fast.
-      obs.send('SetSceneItemRender', {
-        source: sourceMain,
+        obs.send('SetSceneItemRender', {
+        source: sourceName,
         render: true,           // Enable visibility
-        "scene-name": sceneMain
-      });
+        "scene-name": sceneName
+      })
     })
     .catch(err => {
       console.log(err);
     });
-    counter1++;
-    console.log(`* Executed ${commandName} command`);     
-  }
-  else {     // Activate if counter1 is divisible by 5.
-    client.say(target,`NO AND THEN!! (${counter1})`);
-    obs.send('GetSceneList')
-    .then(data => {
-      //console.log(data);
-      obs.send('SetSceneItemRender', {
-        source: sourceMainEx,
-        render: false,          // Disable visibility
-        "scene-name": sceneMain
-      });
-      wait(100);  // Necessary to wait between setting attributes
-      // It was found that it would ignore one of the requests if it was too fast.
-      obs.send('SetSceneItemRender', {
-        source: sourceMainEx,
-        render: true,           // Enable visibility
-        "scene-name": sceneMain
-      });
-    })
-    .catch(err => {
-      console.log(err);
-    });
-    counter1++;
-    console.log(`* Executed ${commandName} command`);     
-  }
+    console.log(`* Executed ${commandName} command`);
 }
 
 function submode(target, context, msg, self, commandName){
