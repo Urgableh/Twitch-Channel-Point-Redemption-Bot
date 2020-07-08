@@ -267,6 +267,9 @@ var subonly = false;
 function onMessageHandler (target, context, msg, self) {
   // Remove whitespace from chat message and take the first word
   const commandName = msg.trim().split(' ')[0];
+  var sourceName = null;
+  var sceneName = null;
+  var timeS = null;
 
   if (coolingdown) {    // If cooling down, keep monitoring chat but do not respond
     console.log('cooling down...');
@@ -284,12 +287,6 @@ function onMessageHandler (target, context, msg, self) {
         submode(target, context, msg, self);
         return;
       }
-//      THIS FEATURE CAN BE ABUSED TO BREAK THE TIMEOUT FUNCTIONS
-//      if (commandName === '!clearqueue') {
-//        q.end();
-//        client.say(target, `Redemption queue has been cleared.`);
-//        return;
-//      }
     }
 
     // If sub mode is enabled and chatter is not a sub, then return.
@@ -297,11 +294,19 @@ function onMessageHandler (target, context, msg, self) {
       return;
     }
 
+    for (i=0; i < obsData.length - 1; i++) {
+      if (commandName == obsData[i][4][1]) {
+        sourceName = obsData[i][1][1];
+        sceneName = obsData[i][0][1];
+        timeS = (parseFloat(obsData[i][2][1]));
+      }
+    }
+
     // Deactivates then reactivates the visibility of the Andthen alert in Screen Capture 2
     if (commandName === '!andthen') {
       andthenf(target, context, msg, self, commandName);
       coolingdown = true;   // sets a cooldown variable to true
-      setTimeout(cooldown, waitPeriod*1000);  // calls the function to re-enable commands
+      setTimeout(cooldown(sourceName, sceneName), timeS*1000);  // calls the function to re-enable commands
       return;
     }
 
@@ -322,20 +327,15 @@ function onConnectedHandler (addr, port) {
 }
 
 // Cooldown function that resets the cooldown and resets invisibility of sources
-function cooldown() {
+function cooldown(sourceName, sceneName) {
   coolingdown = false;
   obs.send('GetSceneList')
   .then(data => {
     //console.log(data);
     obs.send('SetSceneItemRender', {
-      source: sourceMain,
+      source: sourceName,
       render: false,          // Disable visibility
-      "scene-name": sceneMain
-    });
-    obs.send('SetSceneItemRender', {
-      source: sourceMainEx,
-      render: false,          // Disable visibility
-      "scene-name": sceneMain
+      "scene-name": sceneName
     });
   })
 }
