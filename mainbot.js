@@ -175,7 +175,7 @@ function inRedemption(channelId, message) {
   var redeemerName = message.userDisplayName;
   var sceneName = null;
   var i;
-  for (i=0; i < obsData.length - 1; i++) {
+  for (i=0; i < obsData.length ; i++) {
     if (message.rewardName == obsData[i][4][1]) { // If redemption matches csv's command
       redemptionName = obsData[i][1][1];
       sceneName = obsData[i][0][1];
