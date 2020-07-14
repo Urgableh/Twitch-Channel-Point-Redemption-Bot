@@ -232,6 +232,7 @@ obs.connect() // Connect to OBS
 })
 .catch(err => {
     console.log(err);
+    console.log("Unable to connect to OBS. Check that OBS is running and OBS-Websocket has been installed.")
 });
 
 // Register event handlers (defined below)
@@ -242,6 +243,7 @@ client.on('connected', onConnectedHandler);
 client.connect()
 .catch(err => {
   console.log(err);
+  console.log("Unable to connect to Twitch IRC server.")
 });
 
 // Global variables for functions
