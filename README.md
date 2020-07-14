@@ -13,3 +13,4 @@ Current features:
   - Automatically turns on the visibility of the source defined in csv for the specified duration and turns invinsible once it has been played.
   - Chatbot will appear in chat to specify that a redemption is being played when it becomes the next in queue.
   - Submode can be activated by mods or broadcaster for chat message driven automation.
+  - Chat messages will be monitored for key commands to trigger OBS scenes. (A specified cooldown period will ignore other chat requests until it is lapsed.)
