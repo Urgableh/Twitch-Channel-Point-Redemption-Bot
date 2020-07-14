@@ -282,7 +282,7 @@ function onMessageHandler (target, context, msg, self) {
     }
 
     else {    
-      for (i=0; i < obsData.length - 1; i++) {
+      for (i=0; i < obsData.length ; i++) {
         // If command name in chat matches and it is not a channel point redemption
         if (commandName == obsData[i][4][1] && obsData[i][3][1] == 'FALSE') {
           sourceName = obsData[i][1][1];
