@@ -17,11 +17,12 @@ const PubSubClient = require('twitch-pubsub-client').default;
 const request = require("request");
 const TwitchClient = require('twitch').default;
 
+// Global variables to store csv data upon initiation
 var obsData = [];
 var credentialsData = [];
 
-function readData() {
 // Reads a file in the same directory
+function readData() {
   var text1 = fs.readFileSync('data.csv', 'utf8');
   processData(text1, obsData);
   var text2 = fs.readFileSync('credentials.csv', 'utf8');
@@ -30,42 +31,40 @@ function readData() {
 
 // Processes a csv into "lines" variable by splitting
 function processData(allText, lines) {
-  allText = allText + '';
-  var allTextLines = allText.split(/\r\n|\n/);
-  var headers = allTextLines[0].split(',');
-
+  allText = allText + ''; // Makes allText a string
+  var allTextLines = allText.split(/\r\n|\n/); // Splits lines by rows
+  var headers = allTextLines[0].split(','); // Splits the first row by commas as header
+  // Split remaining data and assigns associated headers with them
   for (var i=1; i<allTextLines.length; i++) {
-      var data = allTextLines[i].split(',');
-      if (data.length == headers.length) {
-
-          var tarr = [];
-          for (var j=0; j<headers.length; j++) {
-              tarr.push([headers[j],data[j]]);
-          }
-          lines.push(tarr);
-      }
+    var data = allTextLines[i].split(',');
+    if (data.length == headers.length) {
+        var tarr = [];
+        for (var j=0; j<headers.length; j++) {
+            tarr.push([headers[j],data[j]]);
+        }
+        lines.push(tarr);
+    }
   }
-  //console.log(lines);
 }
 
 // Execute data reading and storage
 readData();
 
 // Define keys for pubsub
-const clientId = credentialsData[0][1][1];    //https://twitchtokengenerator.com/
-const accessToken = credentialsData[1][1][1]; //https://twitchtokengenerator.com/
+const clientId = credentialsData[0][1][1];    // https://twitchtokengenerator.com/
+const accessToken = credentialsData[1][1][1]; // https://twitchtokengenerator.com/
 const clientSecret = credentialsData[2][1][1];
-const refreshToken = credentialsData[3][1][1];  //https://twitchtokengenerator.com/
-const channelId = credentialsData[4][1][1];      // https://codepen.io/Alca/pen/yLBdjyb
+const refreshToken = credentialsData[3][1][1];  // https://twitchtokengenerator.com/
+const channelId = credentialsData[4][1][1];     // https://codepen.io/Alca/pen/yLBdjyb
  
-// Define configuration options
+// Define chatbot and channel configuration options
 const opts = {
   identity: {
-    username: credentialsData[5][1][1],
-    password: credentialsData[6][1][1]    //from https://twitchapps.com/tmi/
+    username: credentialsData[5][1][1],   // Username of the chatbot
+    password: credentialsData[6][1][1]    // https://twitchapps.com/tmi/
   },
   channels: [
-    credentialsData[7][1][1]
+    credentialsData[7][1][1]    // Channel that the chatbot will monitor
   ],
   connection: {
     server: 'irc-ws.chat.twitch.tv',
@@ -73,7 +72,7 @@ const opts = {
   }
 };
 
-// Initiate Queue features
+// Initiate Queue variables
 var queue = require('queue');
 var q = queue();
 var results = [];
@@ -82,17 +81,17 @@ var temp1 = [], j = 0, temp2;
 // Redemption obs function
 function runningQueue(redemptionName, sceneName, timeS, redeemerName) {
   var sceneMatch = false, sourceMatch = false;
-  q.stop();
+  q.stop();   // Stop the queue first. It will resume after a timeout.
   q.timeout = 99999;
   console.log(redemptionName);
   obs.send('GetSceneList')
   .then(data => {
     // If the alert scene collection is implanted in the current scene
     for (i=0; i<data.scenes.length - 1; i++) {
-      if (data.scenes[i].name == sceneName) {
+      if (data.scenes[i].name == sceneName) { // Match the scene name
         sceneMatch = true;
         for (j=0; j<data.scenes[i].sources.length; j++) {
-          if (data.scenes[i].sources[j].name == redemptionName) {
+          if (data.scenes[i].sources[j].name == redemptionName) { // Match the source name
             sourceMatch = true;
           }
         }
@@ -101,18 +100,18 @@ function runningQueue(redemptionName, sceneName, timeS, redeemerName) {
     obs.send('GetCurrentScene')
     .then(data => {
         // If the alert scene is in the current scene
-        if (data.name == sceneName) {
+        if (data.name == sceneName) { // Match the scene name
           sceneMatch = true;
         }
         for (i=0; i< data.sources.length - 1; i++) {
-          if (data.sources[i].name == redemptionName) {
+          if (data.sources[i].name == redemptionName) { // Match the source name
             sourceMatch = true;
           }
         }
     })
     .then(data => {
       if (sceneMatch == true && sourceMatch == true) {
-        //redeemChat(redemptionName, redeemerName);
+        redeemChat(redemptionName, redeemerName); // Chat bot messages the chat room
         obs.send('SetSceneItemRender', {
           source: redemptionName,
           render: false,          // Disable visibility
@@ -131,11 +130,10 @@ function runningQueue(redemptionName, sceneName, timeS, redeemerName) {
         .catch(err => {
           console.log(err);
         });
-
+        // Set a timeout to disable visibility after a certain time
         temp1[j] = setTimeout(function() {
           obs.send('GetSceneList')
           .then(data => {
-            //console.log(data);
             obs.send('SetSceneItemRender', {
               source: redemptionName,
               render: false,          // Disable visibility
@@ -146,18 +144,17 @@ function runningQueue(redemptionName, sceneName, timeS, redeemerName) {
             });
           })
         }, (timeS + 3)*1000);
-        if (temp2) {
+        if (temp2) {  // If a timeout exists to start the queue, clear it before resetting it.
           clearTimeout(temp2);
         }
-        temp2 = setTimeout(startqueue, (timeS+3)*1000);
+        temp2 = setTimeout(startqueue, (timeS+3)*1000); // Restart the queue when visibility is reset
         j++;
       }
-      else {
+      else {  // Continue with the queue if the source and scene are not matched
         console.log(redemptionName + " is not a recognised alert redemption in the current scene.");
         startqueue();
       }
     })
-    //console.log(data);   
   })
 }
 
@@ -171,83 +168,75 @@ function startqueue() {
   q.start();
 }
 
-// Redemption internal function
+// Redemption internal function to match data.csv to the redemption
 function inRedemption(channelId, message) {
   var timeS;
   var redemptionName = null;
   var redeemerName = message.userDisplayName;
   var sceneName = null;
   var i;
-  for (i=0; i < obsData.length - 1; i++) {
-    if (message.rewardName == obsData[i][4][1]) {
+  for (i=0; i < obsData.length ; i++) {
+    if (message.rewardName == obsData[i][4][1]) { // If redemption matches csv's command
       redemptionName = obsData[i][1][1];
       sceneName = obsData[i][0][1];
-      timeS = (parseFloat(obsData[i][2][1]));
+      timeS = (parseFloat(obsData[i][2][1])); // Change string duration to a float
     }
   }
   return [redemptionName, sceneName, timeS, redeemerName];
 }
 
-// Redemption from pubsub client
+// Redemption request monitoring using pubsub client
 const runRedemption = async () => {
-  const twitchClient = TwitchClient.withCredentials(clientId, accessToken, undefined, {clientSecret, refreshToken, onRefresh: async (t) => {
-
-  }});
- 
+  const twitchClient = TwitchClient.withCredentials(clientId, accessToken, undefined, {clientSecret, refreshToken, onRefresh: async (t) => {}});
   const pubSubClient = new PubSubClient();
   await pubSubClient.registerUserListener(twitchClient);
-  var temp = false;
+  var temp = false; // Temporary variable to make sure the queue doesn't restart on every redemption
 
   pubSubClient.onRedemption(channelId, (message) => {
-    if ( q.length == 0 ) {
+    if ( q.length == 0 ) {  // If the queue has no items in it
       temp = true;
     }
     else {
       temp = false;
     }
     console.log("Redemption received");
-    var redeemed = inRedemption(channelId, message);
-    q.push(function (run) {
+    var redeemed = inRedemption(channelId, message); // Match data.csv to the redemption
+    q.push(function (run) { // Add OBS manipulation item into queue
       results.push(runningQueue(redeemed[0], redeemed[1], redeemed[2], redeemed[3]))
       run();
     })
-    q.push(function (run) {
+    q.push(function (run) { // Add console logging item into queue
       results.push(console.log("Redemption complete"));
       run();
     })
-    if (temp){
+    if (temp){  // If the queue has no items in it when redemption was received, start the queue.
       q.start();
     }
   })
 }
 
-// Run redemption bot
+// Always run redemption bot functions
 runRedemption();
 
-// Scene and source constants
-const sceneMain = 'GRANDPIANO'
-const sourceMain = 'and then'
-const sourceMainEx = 'no and then'
-const waitPeriod = 15           // Global cooldown (s) when triggering alerts to disable again
+// Create a client with credential specified options
 
-// Create a client with our options
 const client = new tmi.client(opts);
 const obs = new OBSWebSocket();
 
-obs.connect()
+obs.connect() // Connect to OBS
 .then(() => {
     console.log(`Success! We're connected & authenticated to OBS.`);
     return obs.send('GetSceneList');
 })
 .then(data => {
-    //console.log(data);
     console.log(`${data.scenes.length} Available Scenes!`);
 })
-.catch(err => { // Promise convention dicates you have a catch on every chain.
+.catch(err => {
     console.log(err);
+    console.log("Unable to connect to OBS. Check that OBS is running and OBS-Websocket has been installed.")
 });
 
-// Register our event handlers (defined below)
+// Register event handlers (defined below)
 client.on('message', onMessageHandler);
 client.on('connected', onConnectedHandler);
 
@@ -255,12 +244,16 @@ client.on('connected', onConnectedHandler);
 client.connect()
 .catch(err => {
   console.log(err);
+  console.log("Unable to connect to Twitch IRC server.")
 });
 
 // Global variables for functions
-var counter1 = 1;
 var coolingdown = false;
 var subonly = false;
+var sourceName = null;
+var sceneName = null;
+var timeS = null;
+var counter1 = 1;
 
 // Called every time a message comes in
 function onMessageHandler (target, context, msg, self) {
@@ -275,7 +268,7 @@ function onMessageHandler (target, context, msg, self) {
   else {
     if (self) { return; } // Ignore messages from the bot
 
-    var subbed = context.subscriber;  // variable to check if message is from a subscriber
+    var subbed = context.subscriber;  // Variable to check if message is from a subscriber
     
     // Toggle submode if channel owner or moderator
     if (context.username === `${opts.channels[0].split("#").pop()}` || context.mod === true) {
@@ -283,36 +276,38 @@ function onMessageHandler (target, context, msg, self) {
         submode(target, context, msg, self);
         return;
       }
-//      THIS FEATURE CAN BE ABUSED TO BREAK THE TIMEOUT FUNCTIONS
-//      if (commandName === '!clearqueue') {
-//        q.end();
-//        client.say(target, `Redemption queue has been cleared.`);
-//        return;
-//      }
     }
 
     // If sub mode is enabled and chatter is not a sub, then return.
     if (subonly && !subbed) {
       return;
     }
-
-    // Deactivates then reactivates the visibility of the Andthen alert in Screen Capture 2
-    if (commandName === '!andthen') {
-      andthenf(target, context, msg, self, commandName);
-      coolingdown = true;   // sets a cooldown variable to true
-      setTimeout(cooldown, waitPeriod*1000);  // calls the function to re-enable commands
-      return;
-    }
-
+    
     else {
-      //  console.log(`* Unknown command ${commandName}`);
+      if (commandName === '!andthen') {
+        andthenf(target, context, msg, self, commandName);
+        coolingdown = true;   // sets a cooldown variable to true
+        setTimeout(cooldownAndthen, 15*1000);  // Resets cooldown to false and disables visibility after a set timeout
+        return;
+      }
+      else {
+        for (i=0; i < obsData.length ; i++) {
+          // If command name in chat matches and it is not a channel point redemption
+          if (commandName == obsData[i][4][1] && obsData[i][3][1] == 'FALSE') {
+            sourceName = obsData[i][1][1];
+            sceneName = obsData[i][0][1];
+            timeS = (parseFloat(obsData[i][2][1])); // Change string duration to a float
+
+            activateSource(commandName, sourceName, sceneName); // Enable source visibility
+            coolingdown = true;   // Sets a cooldown variable to true
+            setTimeout(cooldown, timeS*1000);  // Resets cooldown to false and disables visibility after a set timeout
+            return;
+          }
+        }
+      }
     }
-
   }
-  
 }
-
-//////// FUNCTION DEFINITIONS BELOW ////////
 
 // Called every time the bot connects to Twitch chat
 function onConnectedHandler (addr, port) {
@@ -321,20 +316,32 @@ function onConnectedHandler (addr, port) {
 }
 
 // Cooldown function that resets the cooldown and resets invisibility of sources
-function cooldown() {
-  coolingdown = false;
+function cooldownAndthen() {
+  coolingdown = false;  // Reset global variable coolingdown to false
   obs.send('GetSceneList')
   .then(data => {
     //console.log(data);
     obs.send('SetSceneItemRender', {
-      source: sourceMain,
+      source: 'and then',
       render: false,          // Disable visibility
-      "scene-name": sceneMain
+      "scene-name": 'GRANDPIANO'
     });
     obs.send('SetSceneItemRender', {
-      source: sourceMainEx,
+      source: 'no and then',
       render: false,          // Disable visibility
-      "scene-name": sceneMain
+      "scene-name": 'GRANDPIANO'
+    })
+  })
+}
+
+function cooldown() {
+  coolingdown = false;   // Reset global variable coolingdown to false
+  obs.send('GetSceneList')
+  .then(data => {
+    obs.send('SetSceneItemRender', {
+      source: sourceName,
+      render: false,          // Disable visibility
+      "scene-name": sceneName
     });
   })
 }
@@ -348,28 +355,44 @@ function wait(ms){
  }
 }
 
+// Function to enable the OBS source visibility
+function activateSource(commandName, sourceName, sceneName){
+    obs.send('GetSceneList')
+    .then(data => {
+        obs.send('SetSceneItemRender', {
+        source: sourceName,
+        render: true,           // Enable visibility
+        "scene-name": sceneName
+      })
+    })
+    .catch(err => {
+      console.log(err);
+    });
+    console.log(`* Executed ${commandName} command`);
+}
+
 // function for andthen
 function andthenf(target, context, msg, self, commandName){
   if (counter1%5 !== 0) {     // Activate if counter1 is not divisible by 5.
     //client.say(target,`AND THEN?! (${counter1})`);
     obs.send('GetSceneList')
-    .then(data => {
       //console.log(data);
+    .then(data => {
       obs.send('SetSceneItemRender', {
-        source: sourceMain,
+        source: 'and then',
         render: false,          // Disable visibility
-        "scene-name": sceneMain
+        "scene-name": 'GRANDPIANO'
       });
-      wait(100);  // Necessary to wait between setting attributes
       // It was found that it would ignore one of the requests if it was too fast.
+      wait(100);  // Necessary to wait between setting attributes
       obs.send('SetSceneItemRender', {
-        source: sourceMain,
         render: true,           // Enable visibility
-        "scene-name": sceneMain
+        source: 'and then',
+        "scene-name": 'GRANDPIANO'
+      })
+      .catch(err => {
+        console.log(err);
       });
-    })
-    .catch(err => {
-      console.log(err);
     });
     counter1++;
     console.log(`* Executed ${commandName} command`);     
@@ -380,17 +403,17 @@ function andthenf(target, context, msg, self, commandName){
     .then(data => {
       //console.log(data);
       obs.send('SetSceneItemRender', {
-        source: sourceMainEx,
+        source: 'no and then',
         render: false,          // Disable visibility
-        "scene-name": sceneMain
+        "scene-name": 'GRANDPIANO'
       });
       wait(100);  // Necessary to wait between setting attributes
       // It was found that it would ignore one of the requests if it was too fast.
       obs.send('SetSceneItemRender', {
-        source: sourceMainEx,
+        source: 'no and then',
         render: true,           // Enable visibility
-        "scene-name": sceneMain
-      });
+        "scene-name": 'GRANDPIANO'
+      })
     })
     .catch(err => {
       console.log(err);
@@ -400,8 +423,9 @@ function andthenf(target, context, msg, self, commandName){
   }
 }
 
+// Function to enable sub-only mode for chatbot recognition
 function submode(target, context, msg, self, commandName){
-  subonly = !subonly;
+  subonly = !subonly; // Boolean toggle
   var mode;
   if (subonly === true) {
     mode = 'sub only';
@@ -409,7 +433,7 @@ function submode(target, context, msg, self, commandName){
   else {
     mode = 'free for all';
   }
-  client.say(target, `/me is in ${mode} mode.`)
+  client.say(target, `/me is in ${mode} mode.`) // Message the chat room
   .catch(err => {
     console.log(err);
   });

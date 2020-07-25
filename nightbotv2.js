@@ -65,7 +65,7 @@ const opts = {
     password: credentialsData[6][1][1]    //from https://twitchapps.com/tmi/
   },
   channels: [
-    //'bryceac'//credentialsData[7][1][1]
+    'harrymkwiisr'//'urgableh'//'bryceac'//credentialsData[7][1][1]
   ],
   connection: {
     server: 'irc-ws.chat.twitch.tv',
@@ -92,10 +92,12 @@ function onMessageHandler (target, context, msg, self) {
   const commandName = msg.trim().split(' ')[0];
 
   if (self) { return; } // Ignore messages from the bot
-
-  if (commandName === "helo") {
-    client.say(target, 'bai VoHiYo');
-    return;
+  
+  if (context.username === "urgableh") {
+    //if (commandName === "best bot") {
+      client.say(target, '@urgableh no u');
+      return;
+    //}
   }
   else {
       console.log(`* Unknown command ${commandName}`);
