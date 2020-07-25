@@ -219,11 +219,6 @@ const runRedemption = async () => {
 runRedemption();
 
 // Create a client with credential specified options
-// Scene and source constants
-const sceneMain = 'GRANDPIANO'
-const sourceMain = 'and then'
-const sourceMainEx = 'no and then'
-const waitPeriod = 15           // Global cooldown (s) when triggering alerts to disable again
 
 const client = new tmi.client(opts);
 const obs = new OBSWebSocket();
@@ -258,6 +253,7 @@ var subonly = false;
 var sourceName = null;
 var sceneName = null;
 var timeS = null;
+var counter1 = 1;
 
 // Called every time a message comes in
 function onMessageHandler (target, context, msg, self) {
@@ -286,28 +282,30 @@ function onMessageHandler (target, context, msg, self) {
     if (subonly && !subbed) {
       return;
     }
+    
+    else {
+      if (commandName === '!andthen') {
+        andthenf(target, context, msg, self, commandName);
+        coolingdown = true;   // sets a cooldown variable to true
+        setTimeout(cooldownAndthen, 15*1000);  // Resets cooldown to false and disables visibility after a set timeout
+        return;
+      }
+      else {
+        for (i=0; i < obsData.length ; i++) {
+          // If command name in chat matches and it is not a channel point redemption
+          if (commandName == obsData[i][4][1] && obsData[i][3][1] == 'FALSE') {
+            sourceName = obsData[i][1][1];
+            sceneName = obsData[i][0][1];
+            timeS = (parseFloat(obsData[i][2][1])); // Change string duration to a float
 
-    else {    
-      for (i=0; i < obsData.length ; i++) {
-        // If command name in chat matches and it is not a channel point redemption
-        if (commandName == obsData[i][4][1] && obsData[i][3][1] == 'FALSE') {
-          sourceName = obsData[i][1][1];
-          sceneName = obsData[i][0][1];
-          timeS = (parseFloat(obsData[i][2][1])); // Change string duration to a float
-
-          activateSource(commandName, sourceName, sceneName); // Enable source visibility
-          coolingdown = true;   // Sets a cooldown variable to true
-          setTimeout(cooldown, timeS*1000);  // Resets cooldown to false and disables visibility after a set timeout
-          return;
+            activateSource(commandName, sourceName, sceneName); // Enable source visibility
+            coolingdown = true;   // Sets a cooldown variable to true
+            setTimeout(cooldown, timeS*1000);  // Resets cooldown to false and disables visibility after a set timeout
+            return;
+          }
         }
       }
-    // Deactivates then reactivates the visibility of the Andthen alert in Screen Capture 2
-    if (commandName === '!andthen') {
-      andthenf(target, context, msg, self, commandName);
-      coolingdown = true;   // sets a cooldown variable to true
-      return;
     }
-    //console.log(`* Unknown command ${commandName}`);
   }
 }
 
@@ -318,23 +316,32 @@ function onConnectedHandler (addr, port) {
 }
 
 // Cooldown function that resets the cooldown and resets invisibility of sources
-function cooldown() {
+function cooldownAndthen() {
   coolingdown = false;  // Reset global variable coolingdown to false
-  coolingdown = false;
   obs.send('GetSceneList')
   .then(data => {
     //console.log(data);
     obs.send('SetSceneItemRender', {
-      source: sourceMain,
+      source: 'and then',
       render: false,          // Disable visibility
-      "scene-name": sceneMain
+      "scene-name": 'GRANDPIANO'
     });
     obs.send('SetSceneItemRender', {
+      source: 'no and then',
+      render: false,          // Disable visibility
+      "scene-name": 'GRANDPIANO'
+    })
+  })
+}
+
+function cooldown() {
+  coolingdown = false;   // Reset global variable coolingdown to false
+  obs.send('GetSceneList')
+  .then(data => {
+    obs.send('SetSceneItemRender', {
       source: sourceName,
-      source: sourceMainEx,
       render: false,          // Disable visibility
       "scene-name": sceneName
-      "scene-name": sceneMain
     });
   })
 }
@@ -354,6 +361,16 @@ function activateSource(commandName, sourceName, sceneName){
     .then(data => {
         obs.send('SetSceneItemRender', {
         source: sourceName,
+        render: true,           // Enable visibility
+        "scene-name": sceneName
+      })
+    })
+    .catch(err => {
+      console.log(err);
+    });
+    console.log(`* Executed ${commandName} command`);
+}
+
 // function for andthen
 function andthenf(target, context, msg, self, commandName){
   if (counter1%5 !== 0) {     // Activate if counter1 is not divisible by 5.
@@ -362,20 +379,20 @@ function andthenf(target, context, msg, self, commandName){
       //console.log(data);
     .then(data => {
       obs.send('SetSceneItemRender', {
-        source: sourceMain,
+        source: 'and then',
         render: false,          // Disable visibility
+        "scene-name": 'GRANDPIANO'
       });
-        "scene-name": sceneMain
       // It was found that it would ignore one of the requests if it was too fast.
       wait(100);  // Necessary to wait between setting attributes
       obs.send('SetSceneItemRender', {
         render: true,           // Enable visibility
-        source: sourceMain,
-        "scene-name": sceneMain
+        source: 'and then',
+        "scene-name": 'GRANDPIANO'
+      })
+      .catch(err => {
+        console.log(err);
       });
-    .catch(err => {
-    })
-      console.log(err);
     });
     counter1++;
     console.log(`* Executed ${commandName} command`);     
@@ -386,25 +403,24 @@ function andthenf(target, context, msg, self, commandName){
     .then(data => {
       //console.log(data);
       obs.send('SetSceneItemRender', {
-        source: sourceMainEx,
+        source: 'no and then',
         render: false,          // Disable visibility
-        "scene-name": sceneMain
+        "scene-name": 'GRANDPIANO'
       });
       wait(100);  // Necessary to wait between setting attributes
       // It was found that it would ignore one of the requests if it was too fast.
       obs.send('SetSceneItemRender', {
-        source: sourceMainEx,
+        source: 'no and then',
         render: true,           // Enable visibility
-        "scene-name": sceneName
+        "scene-name": 'GRANDPIANO'
       })
-        "scene-name": sceneMain
     })
     .catch(err => {
       console.log(err);
     });
-    console.log(`* Executed ${commandName} command`);
     counter1++;
     console.log(`* Executed ${commandName} command`);     
+  }
 }
 
 // Function to enable sub-only mode for chatbot recognition
