@@ -111,7 +111,7 @@ function runningQueue(redemptionName, sceneName, timeS, redeemerName) {
     })
     .then(data => {
       if (sceneMatch == true && sourceMatch == true) {
-        redeemChat(redemptionName, redeemerName); // Chat bot messages the chat room
+        // redeemChat(redemptionName, redeemerName); // Chat bot messages the chat room
         obs.send('SetSceneItemRender', {
           source: redemptionName,
           render: false,          // Disable visibility
