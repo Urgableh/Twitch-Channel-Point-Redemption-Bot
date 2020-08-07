@@ -249,6 +249,7 @@ client.connect()
 
 // Global variables for functions
 var coolingdown = false;
+var coolingdownScene = false;
 var subonly = false;
 var sourceName = null;
 var sceneName = null;
@@ -259,30 +260,45 @@ var counter1 = 1;
 function onMessageHandler (target, context, msg, self) {
   // Remove whitespace from chat message and take the first word
   const commandName = msg.trim().split(' ')[0];
+  
+  // Toggle submode if channel owner or moderator
+  if (context.username === `${opts.channels[0].split("#").pop()}` || context.mod === true) {
+    if (commandName === '!submode') {
+      submode(target, context, msg, self);
+      return;
+    }
+    if ( commandName == '!face' || commandName == '!hands' || commandName == '!hammer' || commandName == '!all') {
+      changeSceneMod(commandName);
+      return;
+    }
+  }
 
-  if (coolingdown) {    // If cooling down, keep monitoring chat but do not respond
+  else if (coolingdown || coolingdownScene) {    // If cooling down, keep monitoring chat but do not respond
     console.log('cooling down...');
     return; 
   }
 
   else {
-    if (self) { return; } // Ignore messages from the bot
+    //if (self) { return; } // Ignore messages from the bot
 
     var subbed = context.subscriber;  // Variable to check if message is from a subscriber
-    
-    // Toggle submode if channel owner or moderator
-    if (context.username === `${opts.channels[0].split("#").pop()}` || context.mod === true) {
-      if (commandName === '!submode') {
-        submode(target, context, msg, self);
-        return;
-      }
-    }
 
     // If sub mode is enabled and chatter is not a sub, then return.
     if (subonly && !subbed) {
       return;
     }
     
+    else if (subbed == true) {
+      if (context.badges.subscriber == '3000' || context.badges.subscriber == '2000') {
+        if ( commandName == '!face' || commandName == '!hands' || commandName == '!hammer' || commandName == '!all') {
+          changeScene(commandName);
+          coolingdownScene = true;
+          setTimeout(cooldownScene, 20*1000);
+          return;
+        }
+      }
+    }
+
     else {
       if (commandName === '!andthen') {
         andthenf(target, context, msg, self, commandName);
@@ -344,6 +360,10 @@ function cooldown() {
       "scene-name": sceneName
     });
   })
+}
+
+function cooldownScene() {
+  coolingdownScene = false;
 }
 
 // Function to hold the program for ms seconds in milliseconds
@@ -437,4 +457,27 @@ function submode(target, context, msg, self, commandName){
   .catch(err => {
     console.log(err);
   });
+}
+
+// Function to change scene permanently
+function changeScene(sceneName){
+  var scene_name = sceneName.substring(1);
+  obs.send('SetCurrentScene', {
+    'scene-name': scene_name
+  })
+  .catch(err => {
+    console.log(err);
+  });
+  console.log(`* Executed Change Scene to ${sceneName}`);
+}
+
+function changeSceneMod(sceneName){
+  var scene_name = sceneName.substring(1);
+  obs.send('SetCurrentScene', {
+    'scene-name': scene_name
+  })
+  .catch(err => {
+    console.log(err);
+  });
+  console.log(`* Executed Mod Change Scene to ${sceneName}`);
 }
