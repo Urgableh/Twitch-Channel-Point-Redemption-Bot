@@ -273,13 +273,13 @@ function onMessageHandler (target, context, msg, self) {
     }
   }
 
-  else if (coolingdown || coolingdownScene) {    // If cooling down, keep monitoring chat but do not respond
+  if (coolingdown || coolingdownScene) {    // If cooling down, keep monitoring chat but do not respond
     console.log('cooling down...');
     return; 
   }
 
   else {
-    //if (self) { return; } // Ignore messages from the bot
+    if (self) { return; } // Ignore messages from the bot
 
     var subbed = context.subscriber;  // Variable to check if message is from a subscriber
 
@@ -299,26 +299,24 @@ function onMessageHandler (target, context, msg, self) {
       }
     }
 
+    if (commandName === '!andthen') {
+      andthenf(target, context, msg, self, commandName);
+      coolingdown = true;   // sets a cooldown variable to true
+      setTimeout(cooldownAndthen, 15*1000);  // Resets cooldown to false and disables visibility after a set timeout
+      return;
+    }
     else {
-      if (commandName === '!andthen') {
-        andthenf(target, context, msg, self, commandName);
-        coolingdown = true;   // sets a cooldown variable to true
-        setTimeout(cooldownAndthen, 15*1000);  // Resets cooldown to false and disables visibility after a set timeout
-        return;
-      }
-      else {
-        for (i=0; i < obsData.length ; i++) {
-          // If command name in chat matches and it is not a channel point redemption
-          if (commandName == obsData[i][4][1] && obsData[i][3][1] == 'FALSE') {
-            sourceName = obsData[i][1][1];
-            sceneName = obsData[i][0][1];
-            timeS = (parseFloat(obsData[i][2][1])); // Change string duration to a float
+      for (i=0; i < obsData.length ; i++) {
+        // If command name in chat matches and it is not a channel point redemption
+        if (commandName == obsData[i][4][1] && obsData[i][3][1] == 'FALSE') {
+          sourceName = obsData[i][1][1];
+          sceneName = obsData[i][0][1];
+          timeS = (parseFloat(obsData[i][2][1])); // Change string duration to a float
 
-            activateSource(commandName, sourceName, sceneName); // Enable source visibility
-            coolingdown = true;   // Sets a cooldown variable to true
-            setTimeout(cooldown, timeS*1000);  // Resets cooldown to false and disables visibility after a set timeout
-            return;
-          }
+          activateSource(commandName, sourceName, sceneName); // Enable source visibility
+          coolingdown = true;   // Sets a cooldown variable to true
+          setTimeout(cooldown, timeS*1000);  // Resets cooldown to false and disables visibility after a set timeout
+          return;
         }
       }
     }
