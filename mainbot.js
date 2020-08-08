@@ -286,9 +286,10 @@ function onMessageHandler (target, context, msg, self) {
       return;
     }
     
-    else if (subbed == true || context.badges.founder != undefined) {
+    else if (subbed == true) {
       var subplan = parseFloat(context.badges.subscriber);
-      if (subplan >= 2000 || context.badges.founder != undefined) {
+      console.log(context.username + ": " + subplan);
+      if (subplan >= 2000) {
         if ( commandName == '!face' || commandName == '!hands' || commandName == '!hammer' || commandName == '!all') {
           changeScene(commandName);
           coolingdownScene = true;
