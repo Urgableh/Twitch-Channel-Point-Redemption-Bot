@@ -280,16 +280,15 @@ function onMessageHandler (target, context, msg, self) {
 
   else {
     if (self) { return; } // Ignore messages from the bot
-
     var subbed = context.subscriber;  // Variable to check if message is from a subscriber
-
     // If sub mode is enabled and chatter is not a sub, then return.
     if (subonly && !subbed) {
       return;
     }
     
-    else if (subbed == true) {
-      if (context.badges.subscriber == '3000' || context.badges.subscriber == '2000') {
+    else if (subbed == true || context.badges.founder != undefined) {
+      var subplan = parseFloat(context.badges.subscriber);
+      if (subplan >= 2000 || context.badges.founder != undefined) {
         if ( commandName == '!face' || commandName == '!hands' || commandName == '!hammer' || commandName == '!all') {
           changeScene(commandName);
           coolingdownScene = true;
